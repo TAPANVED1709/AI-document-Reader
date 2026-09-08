@@ -108,9 +108,13 @@ public class ReportsController : ControllerBase
         }
 
         // 4. Handle OCR requirement for scanned documents
-        if (aiResponse.RequiresOcr)
+        //    - RequiresOcr=true  AND OcrApplied=false  → Tesseract not installed, cannot process
+        //    - RequiresOcr=false AND OcrApplied=true   → OCR was run locally, results available
+        if (aiResponse.RequiresOcr && !aiResponse.OcrApplied)
         {
-            _logger.LogInformation("Document {ReportId} flagged as requiring OCR.", report.Id);
+            _logger.LogInformation(
+                "Document {ReportId} is a scanned PDF and Tesseract OCR is not available on the AI service.",
+                report.Id);
             report.Status = ReportStatus.RequiresOcr;
             report.AnalysedAt = DateTimeOffset.UtcNow;
 
@@ -118,7 +122,14 @@ public class ReportsController : ControllerBase
             analysisRun.CompletedAt = DateTimeOffset.UtcNow;
             await _dbContext.SaveChangesAsync(cancellationToken);
 
-            return Ok(MapToDto(report, new List<LabResult>()));
+            return Ok(MapToDto(report, new List<LabResult>(), ocrApplied: false));
+        }
+
+        if (aiResponse.OcrApplied)
+        {
+            _logger.LogInformation(
+                "Document {ReportId} was processed via local OCR. Extracted {Count} result(s).",
+                report.Id, aiResponse.Results.Count);
         }
 
         // 5. Apply deterministic reference-range classification and save results
@@ -164,7 +175,7 @@ public class ReportsController : ControllerBase
 
         _logger.LogInformation("Report {ReportId} successfully analysed. {Count} tests saved.", report.Id, labResults.Count);
 
-        return CreatedAtAction(nameof(GetReportById), new { id = report.Id }, MapToDto(report, labResults));
+        return CreatedAtAction(nameof(GetReportById), new { id = report.Id }, MapToDto(report, labResults, ocrApplied: aiResponse.OcrApplied));
     }
 
     /// <summary>
@@ -182,7 +193,7 @@ public class ReportsController : ControllerBase
             return NotFound(new { error = $"Medical report '{id}' was not found." });
         }
 
-        return Ok(MapToDto(report, report.LabResults.ToList()));
+        return Ok(MapToDto(report, report.LabResults.ToList(), ocrApplied: false));
     }
 
     /// <summary>
@@ -206,7 +217,7 @@ public class ReportsController : ControllerBase
         return Ok(results.Select(MapResultToDto).ToList());
     }
 
-    private static object MapToDto(MedicalReport report, List<LabResult> results)
+    private static object MapToDto(MedicalReport report, List<LabResult> results, bool ocrApplied = false)
     {
         return new
         {
@@ -216,6 +227,7 @@ public class ReportsController : ControllerBase
             fileSize = report.FileSize,
             status = report.Status.ToString(),
             requiresOcr = report.Status == ReportStatus.RequiresOcr,
+            ocrApplied,
             uploadedAt = report.UploadedAt,
             analysedAt = report.AnalysedAt,
             resultsCount = results.Count,

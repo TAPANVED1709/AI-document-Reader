@@ -18,6 +18,7 @@ public record AiLabResultDto(
 
 public record AiAnalysisResponseDto(
     bool RequiresOcr,
+    bool OcrApplied,
     List<int> Pages,
     List<AiLabResultDto> Results
 );

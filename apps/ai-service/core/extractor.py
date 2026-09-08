@@ -4,7 +4,9 @@ Extracts text per page and determines whether the document requires OCR.
 """
 from dataclasses import dataclass
 from typing import List, Tuple
+
 import fitz  # PyMuPDF
+from PIL import Image
 
 
 @dataclass
@@ -55,3 +57,23 @@ class PdfExtractor:
             return pages, requires_ocr
         finally:
             doc.close()
+
+    @staticmethod
+    def render_page_to_image(page: fitz.Page, dpi: int = 300) -> Image.Image:
+        """
+        Render a single PyMuPDF page to a greyscale PIL Image.
+
+        Used by LocalOcrEngine — exposed here so both the extractor and
+        OCR engine share the same page-rendering logic.
+
+        Args:
+            page: A fitz.Page object (must still be open).
+            dpi:  Target rendering resolution (default 300 DPI).
+
+        Returns:
+            A greyscale PIL Image of the rendered page.
+        """
+        scale = dpi / 72.0
+        mat = fitz.Matrix(scale, scale)
+        pixmap = page.get_pixmap(matrix=mat, colorspace=fitz.csGRAY, alpha=False)
+        return Image.frombytes("L", (pixmap.width, pixmap.height), pixmap.samples)
