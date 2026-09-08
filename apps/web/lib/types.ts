@@ -8,6 +8,17 @@ export type LabResult = {
   valueNumeric?: number;
   valueText: string;
   unit?: string;
+  originalUnit?: string;
+  normalizedUnit?: string;
+  valueOperator?: string;
+  referenceType?: string;
+  referenceOperator?: string;
+  reportedFlag?: string;
+  sectionName?: string;
+  methodText?: string;
+  reviewRequired?: boolean;
+  ambiguityReason?: string;
+  flagDiscrepancy?: string;
   referenceMin?: number;
   referenceMax?: number;
   referenceText?: string;
