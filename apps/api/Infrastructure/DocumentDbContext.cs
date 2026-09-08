@@ -52,7 +52,17 @@ public class DocumentDbContext : DbContext
             entity.Property(e => e.NormalizedTestName).HasMaxLength(255);
             entity.Property(e => e.ValueText).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Unit).HasMaxLength(50);
+            entity.Property(e => e.OriginalUnit).HasMaxLength(50);
+            entity.Property(e => e.NormalizedUnit).HasMaxLength(50);
+            entity.Property(e => e.ValueOperator).HasMaxLength(5);
             entity.Property(e => e.ReferenceText).HasMaxLength(100);
+            entity.Property(e => e.ReferenceType).HasMaxLength(40).IsRequired();
+            entity.Property(e => e.ReferenceOperator).HasMaxLength(5);
+            entity.Property(e => e.ReportedFlag).HasMaxLength(20);
+            entity.Property(e => e.SectionName).HasMaxLength(100);
+            entity.Property(e => e.MethodText).HasMaxLength(255);
+            entity.Property(e => e.AmbiguityReason).HasMaxLength(500);
+            entity.Property(e => e.FlagDiscrepancy).HasMaxLength(500);
             entity.Property(e => e.CalculatedStatus)
                   .HasConversion<string>()
                   .HasMaxLength(50)

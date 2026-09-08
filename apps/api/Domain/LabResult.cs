@@ -11,9 +11,20 @@ public class LabResult
     public decimal? ValueNumeric { get; set; }
     public string ValueText { get; set; } = string.Empty;
     public string? Unit { get; set; }
+    public string? OriginalUnit { get; set; }
+    public string? NormalizedUnit { get; set; }
+    public string? ValueOperator { get; set; }
     public decimal? ReferenceMin { get; set; }
     public decimal? ReferenceMax { get; set; }
     public string? ReferenceText { get; set; }
+    public string ReferenceType { get; set; } = "UNKNOWN";
+    public string? ReferenceOperator { get; set; }
+    public string? ReportedFlag { get; set; }
+    public string? SectionName { get; set; }
+    public string? MethodText { get; set; }
+    public bool ReviewRequired { get; set; }
+    public string? AmbiguityReason { get; set; }
+    public string? FlagDiscrepancy { get; set; }
     public ResultStatus CalculatedStatus { get; set; } = ResultStatus.UNKNOWN;
     public decimal ExtractionConfidence { get; set; }
     public int PageNumber { get; set; } = 1;

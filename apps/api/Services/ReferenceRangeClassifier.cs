@@ -4,64 +4,25 @@ namespace AI.DocumentReader.Api.Services;
 
 public interface IReferenceRangeClassifier
 {
-    ResultStatus Classify(decimal? value, decimal? referenceMin, decimal? referenceMax);
+    ResultStatus Classify(decimal? value, decimal? referenceMin, decimal? referenceMax, string referenceType = "UNKNOWN");
 }
 
-/// <summary>
-/// Deterministic classification engine strictly following laboratory medicine boundaries.
-/// This service NEVER manufactures reference ranges or generates medical diagnoses.
-/// </summary>
 public class ReferenceRangeClassifier : IReferenceRangeClassifier
 {
-    public ResultStatus Classify(decimal? value, decimal? referenceMin, decimal? referenceMax)
+    public ResultStatus Classify(decimal? value, decimal? referenceMin, decimal? referenceMax, string referenceType = "UNKNOWN")
     {
-        // If numeric value is missing, classification is impossible
-        if (!value.HasValue)
+        if (!value.HasValue || referenceType is "TEXT_ONLY") return ResultStatus.UNKNOWN;
+        if (referenceType == "UNKNOWN") referenceType = referenceMin.HasValue && referenceMax.HasValue ? "BETWEEN" : referenceMax.HasValue ? "LESS_THAN_OR_EQUAL" : referenceMin.HasValue ? "GREATER_THAN_OR_EQUAL" : "UNKNOWN";
+        var val = value.Value;
+        return referenceType switch
         {
-            return ResultStatus.UNKNOWN;
-        }
-
-        decimal val = value.Value;
-
-        // Case 1: Both lower and upper bounds are defined [min, max]
-        if (referenceMin.HasValue && referenceMax.HasValue)
-        {
-            if (val < referenceMin.Value)
-            {
-                return ResultStatus.LOW;
-            }
-
-            if (val > referenceMax.Value)
-            {
-                return ResultStatus.HIGH;
-            }
-
-            return ResultStatus.NORMAL;
-        }
-
-        // Case 2: Only upper bound is defined (e.g. "< 200")
-        if (!referenceMin.HasValue && referenceMax.HasValue)
-        {
-            if (val > referenceMax.Value)
-            {
-                return ResultStatus.HIGH;
-            }
-
-            return ResultStatus.NORMAL;
-        }
-
-        // Case 3: Only lower bound is defined (e.g. "> 60")
-        if (referenceMin.HasValue && !referenceMax.HasValue)
-        {
-            if (val < referenceMin.Value)
-            {
-                return ResultStatus.LOW;
-            }
-
-            return ResultStatus.NORMAL;
-        }
-
-        // Case 4: No reference bounds were extracted from the document
-        return ResultStatus.UNKNOWN;
+            "BETWEEN" when referenceMin.HasValue && referenceMax.HasValue =>
+                val < referenceMin.Value ? ResultStatus.LOW : val > referenceMax.Value ? ResultStatus.HIGH : ResultStatus.NORMAL,
+            "LESS_THAN" when referenceMax.HasValue => val >= referenceMax.Value ? ResultStatus.HIGH : ResultStatus.NORMAL,
+            "LESS_THAN_OR_EQUAL" when referenceMax.HasValue => val > referenceMax.Value ? ResultStatus.HIGH : ResultStatus.NORMAL,
+            "GREATER_THAN" when referenceMin.HasValue => val <= referenceMin.Value ? ResultStatus.LOW : ResultStatus.NORMAL,
+            "GREATER_THAN_OR_EQUAL" when referenceMin.HasValue => val < referenceMin.Value ? ResultStatus.LOW : ResultStatus.NORMAL,
+            _ => ResultStatus.UNKNOWN
+        };
     }
 }

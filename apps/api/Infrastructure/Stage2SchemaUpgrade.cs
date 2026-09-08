@@ -23,7 +23,11 @@ public static class Stage2SchemaUpgrade
             ["CorrectedValueText"] = "TEXT NULL", ["CorrectedUnit"] = "TEXT NULL",
             ["CorrectedReferenceMin"] = "REAL NULL", ["CorrectedReferenceMax"] = "REAL NULL",
             ["CorrectedReferenceText"] = "TEXT NULL", ["CorrectionReason"] = "TEXT NULL",
-            ["CorrectedAt"] = "TEXT NULL", ["CorrectedBy"] = "TEXT NULL"
+            ["CorrectedAt"] = "TEXT NULL", ["CorrectedBy"] = "TEXT NULL",
+            ["OriginalUnit"] = "TEXT NULL", ["NormalizedUnit"] = "TEXT NULL", ["ValueOperator"] = "TEXT NULL",
+            ["ReferenceType"] = "TEXT NOT NULL DEFAULT 'UNKNOWN'", ["ReferenceOperator"] = "TEXT NULL", ["ReportedFlag"] = "TEXT NULL",
+            ["SectionName"] = "TEXT NULL", ["MethodText"] = "TEXT NULL", ["ReviewRequired"] = "INTEGER NOT NULL DEFAULT 0",
+            ["AmbiguityReason"] = "TEXT NULL", ["FlagDiscrepancy"] = "TEXT NULL"
         };
         if (db.Database.IsSqlite())
         {

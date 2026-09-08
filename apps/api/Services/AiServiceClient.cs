@@ -14,7 +14,10 @@ public record AiLabResultDto(
     string? ReferenceText,
     int Page,
     decimal Confidence,
-    string? BoundingBoxJson = null
+    string? BoundingBoxJson = null,
+    string? OriginalUnit = null, string? NormalizedUnit = null, string? ValueOperator = null,
+    string ReferenceType = "UNKNOWN", string? ReferenceOperator = null, string? ReportedFlag = null, string? Section = null,
+    string? MethodText = null, bool ReviewRequired = false, string? AmbiguityReason = null, string? Discrepancy = null
 );
 
 public record AiPageSourceDto(int Page, string Source, string? Error = null);

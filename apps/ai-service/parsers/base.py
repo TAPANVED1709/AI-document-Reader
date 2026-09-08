@@ -11,6 +11,17 @@ class LabResultItem(BaseModel):
     boundingBoxJson: Optional[str] = None
     fieldConfidences: dict[str, float] = Field(default_factory=dict)
     lowConfidence: bool = False
+    originalUnit: Optional[str] = None
+    normalizedUnit: Optional[str] = None
+    valueOperator: Optional[str] = None
+    referenceType: str = "UNKNOWN"
+    referenceOperator: Optional[str] = None
+    reportedFlag: Optional[str] = None
+    section: Optional[str] = None
+    methodText: Optional[str] = None
+    reviewRequired: bool = False
+    ambiguityReason: Optional[str] = None
+    discrepancy: Optional[str] = None
     originalName: str = Field(..., description="Raw test name extracted from document")
     normalizedName: Optional[str] = Field(None, description="Normalized standard test name")
     value: Optional[float] = Field(None, description="Extracted numeric result if convertible")
