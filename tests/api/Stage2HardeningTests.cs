@@ -15,6 +15,43 @@ namespace AI.DocumentReader.Tests;
 
 public class Stage2HardeningTests
 {
+    [Fact]
+    public async Task CorrectionPreservesExtractionAndCreatesAudit()
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = new DocumentDbContext(new DbContextOptionsBuilder<DocumentDbContext>().UseSqlite(connection).Options);
+        await db.Database.EnsureCreatedAsync();
+        var report = new MedicalReport { OriginalFileName = "report.pdf", StoredFileName = "report.pdf", ContentType = "application/pdf", FileSize = 1, PageSourcesJson = "[{\"page\":1,\"source\":\"OCR\"}]" };
+        var result = new LabResult { MedicalReportId = report.Id, OriginalTestName = "Hemoglobin", ValueNumeric = 108, ValueText = "108", Unit = "g/dL", ReferenceMin = 13, ReferenceMax = 17, ReferenceText = "13 - 17", ExtractionConfidence = .4m, PageNumber = 1 };
+        db.MedicalReports.Add(report); db.LabResults.Add(result); await db.SaveChangesAsync();
+        var storage = new Mock<ILocalStorageService>();
+        var ai = new Mock<IAiServiceClient>();
+        var controller = new ReportsController(db, storage.Object, ai.Object, new ReferenceRangeClassifier(), NullLogger<ReportsController>.Instance);
+        var response = Assert.IsType<OkObjectResult>(await controller.CorrectResult(report.Id, result.Id,
+            new ReportsController.ResultCorrectionRequest("Hemoglobin", 10.8m, "10.8", "g/dL", 13, 17, "13 - 17", "OCR decimal error", null), default));
+        var body = JsonSerializer.SerializeToElement(response.Value);
+        Assert.Equal(108, body.GetProperty("extractedValueNumeric").GetDecimal());
+        Assert.Equal(10.8m, body.GetProperty("valueNumeric").GetDecimal());
+        Assert.Equal(.4m, body.GetProperty("extractionConfidence").GetDecimal());
+        Assert.True(body.GetProperty("isCorrected").GetBoolean());
+        Assert.Single(db.ResultCorrectionAudits);
+        Assert.Equal("Value", db.ResultCorrectionAudits.Single().FieldName);
+    }
+
+    [Fact]
+    public async Task CorrectionRejectsInvalidReferenceRange()
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:"); await connection.OpenAsync();
+        await using var db = new DocumentDbContext(new DbContextOptionsBuilder<DocumentDbContext>().UseSqlite(connection).Options); await db.Database.EnsureCreatedAsync();
+        var report = new MedicalReport { OriginalFileName = "report.pdf", StoredFileName = "report.pdf", ContentType = "application/pdf", FileSize = 1 };
+        var result = new LabResult { MedicalReportId = report.Id, OriginalTestName = "Test", ValueText = "1", ExtractionConfidence = .9m }; db.Add(report); db.Add(result); await db.SaveChangesAsync();
+        var controller = new ReportsController(db, new Mock<ILocalStorageService>().Object, new Mock<IAiServiceClient>().Object, new ReferenceRangeClassifier(), NullLogger<ReportsController>.Instance);
+        var response = await controller.CorrectResult(report.Id, result.Id, new ReportsController.ResultCorrectionRequest(null, 1, "1", null, 5, 2, null, null, null), default);
+        Assert.IsType<BadRequestObjectResult>(response);
+        Assert.Empty(db.ResultCorrectionAudits);
+    }
+
     [Theory]
     [InlineData(false, false, "NATIVE", "NATIVE_TEXT", "Completed")]
     [InlineData(true, true, "OCR", "OCR", "Completed")]

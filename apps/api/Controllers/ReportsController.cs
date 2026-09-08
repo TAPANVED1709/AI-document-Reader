@@ -3,6 +3,7 @@ using AI.DocumentReader.Api.Infrastructure;
 using AI.DocumentReader.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace AI.DocumentReader.Api.Controllers;
 
@@ -10,6 +11,17 @@ namespace AI.DocumentReader.Api.Controllers;
 [Route("api/[controller]")]
 public class ReportsController : ControllerBase
 {
+    public record ResultCorrectionRequest(
+        [property: MaxLength(255)] string? TestName,
+        decimal? Value,
+        [property: MaxLength(100)] string? ValueText,
+        [property: MaxLength(50)] string? Unit,
+        decimal? ReferenceMin,
+        decimal? ReferenceMax,
+        [property: MaxLength(100)] string? ReferenceText,
+        [property: MaxLength(1000)] string? Reason,
+        [property: MaxLength(255)] string? CorrectedBy);
+
     private readonly DocumentDbContext _dbContext;
     private readonly ILocalStorageService _storageService;
     private readonly IAiServiceClient _aiServiceClient;
@@ -192,19 +204,81 @@ public class ReportsController : ControllerBase
     [HttpGet("{id:guid}/results")]
     public async Task<IActionResult> GetReportResults(Guid id, CancellationToken cancellationToken)
     {
-        var reportExists = await _dbContext.MedicalReports.AnyAsync(r => r.Id == id, cancellationToken);
-        if (!reportExists)
+        var report = await _dbContext.MedicalReports.Include(r => r.LabResults).FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (report == null)
         {
             return NotFound(new { error = $"Medical report '{id}' was not found." });
         }
 
-        var results = await _dbContext.LabResults
-            .Where(l => l.MedicalReportId == id)
-            .OrderBy(l => l.PageNumber)
-            .ThenBy(l => l.OriginalTestName)
-            .ToListAsync(cancellationToken);
+        return Ok(report.LabResults.OrderBy(l => l.PageNumber).ThenBy(l => l.OriginalTestName)
+            .Select(r => MapResultToDto(r, report)).ToList());
+    }
 
-        return Ok(results.Select(MapResultToDto).ToList());
+    [HttpGet("{id:guid}/file")]
+    public IActionResult GetReportFile(Guid id)
+    {
+        var report = _dbContext.MedicalReports.AsNoTracking().FirstOrDefault(r => r.Id == id);
+        if (report == null || !_storageService.FileExists(report.StoredFileName)) return NotFound(new { error = "Report file was not found." });
+        return PhysicalFile(_storageService.GetReportAbsolutePath(report.StoredFileName), "application/pdf", report.OriginalFileName, enableRangeProcessing: true);
+    }
+
+    [HttpPost("{reportId:guid}/results/{resultId:guid}/verify")]
+    public async Task<IActionResult> VerifyResult(Guid reportId, Guid resultId, CancellationToken cancellationToken)
+    {
+        var result = await _dbContext.LabResults.FirstOrDefaultAsync(r => r.Id == resultId && r.MedicalReportId == reportId, cancellationToken);
+        if (result == null) return NotFound(new { error = "Result was not found." });
+        result.IsVerified = true;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(new { isVerified = true });
+    }
+
+    [HttpPatch("{reportId:guid}/results/{resultId:guid}")]
+    public async Task<IActionResult> CorrectResult(Guid reportId, Guid resultId, [FromBody] ResultCorrectionRequest request, CancellationToken cancellationToken)
+    {
+        if (request.ReferenceMin.HasValue && request.ReferenceMax.HasValue && request.ReferenceMin > request.ReferenceMax)
+            return BadRequest(new { error = "Reference minimum cannot exceed reference maximum." });
+        if (request.TestName is null && request.Value is null && request.ValueText is null && request.Unit is null &&
+            request.ReferenceMin is null && request.ReferenceMax is null && request.ReferenceText is null)
+            return BadRequest(new { error = "At least one corrected value is required." });
+
+        var result = await _dbContext.LabResults.FirstOrDefaultAsync(r => r.Id == resultId && r.MedicalReportId == reportId, cancellationToken);
+        var report = await _dbContext.MedicalReports.AsNoTracking().FirstOrDefaultAsync(r => r.Id == reportId, cancellationToken);
+        if (result == null || report == null) return NotFound(new { error = "Result was not found." });
+        var now = DateTimeOffset.UtcNow;
+        var audit = new List<ResultCorrectionAudit>();
+        void Change(string field, string? previous, string? next, Action apply)
+        {
+            if (next is null || next == previous) return;
+            apply();
+            audit.Add(new ResultCorrectionAudit { LabResultId = result.Id, FieldName = field, PreviousValue = previous, NewValue = next, Reason = request.Reason, ChangedBy = request.CorrectedBy, ChangedAt = now });
+        }
+        Change("TestName", result.CorrectedTestName ?? result.OriginalTestName, request.TestName, () => result.CorrectedTestName = request.TestName);
+        Change("Value", (result.CorrectedValueNumeric ?? result.ValueNumeric)?.ToString(), request.Value?.ToString(), () => { result.CorrectedValueNumeric = request.Value; result.CorrectedValueText = request.ValueText ?? request.Value?.ToString(); });
+        Change("Unit", result.CorrectedUnit ?? result.Unit, request.Unit, () => result.CorrectedUnit = request.Unit);
+        Change("ReferenceMin", (result.CorrectedReferenceMin ?? result.ReferenceMin)?.ToString(), request.ReferenceMin?.ToString(), () => result.CorrectedReferenceMin = request.ReferenceMin);
+        Change("ReferenceMax", (result.CorrectedReferenceMax ?? result.ReferenceMax)?.ToString(), request.ReferenceMax?.ToString(), () => result.CorrectedReferenceMax = request.ReferenceMax);
+        Change("ReferenceText", result.CorrectedReferenceText ?? result.ReferenceText, request.ReferenceText, () => result.CorrectedReferenceText = request.ReferenceText);
+        if (request.ValueText is not null) result.CorrectedValueText = request.ValueText;
+        if (audit.Count == 0) return BadRequest(new { error = "Corrections did not change any value." });
+        result.CorrectionReason = request.Reason;
+        result.CorrectedAt = now;
+        result.CorrectedBy = request.CorrectedBy;
+        var value = result.CorrectedValueNumeric ?? result.ValueNumeric;
+        var min = result.CorrectedReferenceMin ?? result.ReferenceMin;
+        var max = result.CorrectedReferenceMax ?? result.ReferenceMax;
+        result.CalculatedStatus = _rangeClassifier.Classify(value, min, max);
+        _dbContext.ResultCorrectionAudits.AddRange(audit);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return Ok(MapResultToDto(result, report));
+    }
+
+    [HttpGet("{reportId:guid}/results/{resultId:guid}/audit")]
+    public async Task<IActionResult> GetCorrectionAudit(Guid reportId, Guid resultId, CancellationToken cancellationToken)
+    {
+        var exists = await _dbContext.LabResults.AnyAsync(r => r.Id == resultId && r.MedicalReportId == reportId, cancellationToken);
+        if (!exists) return NotFound(new { error = "Result was not found." });
+        var entries = await _dbContext.ResultCorrectionAudits.AsNoTracking().Where(a => a.LabResultId == resultId).OrderBy(a => a.ChangedAt).ToListAsync(cancellationToken);
+        return Ok(entries);
     }
 
     private static object MapToDto(MedicalReport report, List<LabResult> results)
@@ -224,28 +298,41 @@ public class ReportsController : ControllerBase
             uploadedAt = report.UploadedAt,
             analysedAt = report.AnalysedAt,
             resultsCount = results.Count,
-            results = results.Select(MapResultToDto).ToList()
+            results = results.Select(r => MapResultToDto(r, report)).ToList()
         };
     }
 
-    private static object MapResultToDto(LabResult result)
+    private static object MapResultToDto(LabResult result, MedicalReport? report = null)
     {
+        var pageSource = report?.PageSourcesJson is null ? null : System.Text.Json.JsonSerializer.Deserialize<List<AiPageSourceDto>>(report.PageSourcesJson)
+            ?.FirstOrDefault(p => p.Page == result.PageNumber)?.Source;
         return new
         {
             id = result.Id,
             medicalReportId = result.MedicalReportId,
             originalTestName = result.OriginalTestName,
-            normalizedTestName = result.NormalizedTestName,
-            valueNumeric = result.ValueNumeric,
-            valueText = result.ValueText,
-            unit = result.Unit,
-            referenceMin = result.ReferenceMin,
-            referenceMax = result.ReferenceMax,
-            referenceText = result.ReferenceText,
+            normalizedTestName = result.CorrectedTestName ?? result.NormalizedTestName,
+            valueNumeric = result.CorrectedValueNumeric ?? result.ValueNumeric,
+            valueText = result.CorrectedValueText ?? result.ValueText,
+            unit = result.CorrectedUnit ?? result.Unit,
+            referenceMin = result.CorrectedReferenceMin ?? result.ReferenceMin,
+            referenceMax = result.CorrectedReferenceMax ?? result.ReferenceMax,
+            referenceText = result.CorrectedReferenceText ?? result.ReferenceText,
+            extractedOriginalTestName = result.OriginalTestName,
+            extractedValueNumeric = result.ValueNumeric,
+            extractedValueText = result.ValueText,
+            extractedUnit = result.Unit,
+            extractedReferenceMin = result.ReferenceMin,
+            extractedReferenceMax = result.ReferenceMax,
+            extractedReferenceText = result.ReferenceText,
             calculatedStatus = result.CalculatedStatus.ToString(),
             extractionConfidence = result.ExtractionConfidence,
             pageNumber = result.PageNumber,
+            sourceType = pageSource,
             boundingBoxJson = result.BoundingBoxJson,
+            isCorrected = result.CorrectedAt.HasValue,
+            correctionReason = result.CorrectionReason,
+            correctedAt = result.CorrectedAt,
             lowConfidence = result.ExtractionConfidence < 0.8m,
             isVerified = result.IsVerified,
             createdAt = result.CreatedAt

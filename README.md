@@ -27,6 +27,7 @@ AI-document-Reader/
 ├── apps/
 │   ├── api/            # ASP.NET Core Web API (.NET 8) — port 5000
 │   └── ai-service/     # Python FastAPI — port 8000
+│   └── web/            # Next.js / TypeScript / Tailwind review workspace — port 3000
 ├── database/
 │   └── scripts/        # SQL Server DDL (optional; SQLite used for local dev)
 ├── storage/
@@ -135,6 +136,17 @@ dotnet run
 
 Swagger UI: http://localhost:5000/swagger
 
+### 3. Start the web interface
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+Open http://localhost:3000. Set `NEXT_PUBLIC_API_BASE_URL` in `.env.local` when
+the API is not running at `http://localhost:5000`.
+
 ---
 
 ## API Reference
@@ -207,6 +219,19 @@ GET /api/reports/{id}
 ```http
 GET /api/reports/{id}/results
 ```
+
+### Review, correct, and verify a result
+
+```http
+POST /api/reports/{reportId}/results/{resultId}/verify
+PATCH /api/reports/{reportId}/results/{resultId}
+GET /api/reports/{reportId}/results/{resultId}/audit
+GET /api/reports/{reportId}/file
+```
+
+Corrections are stored in separate `Corrected*` fields and create a
+`ResultCorrectionAudit` row. Original extracted values, confidence, source
+type, bounding box, and page remain unchanged.
 
 ---
 

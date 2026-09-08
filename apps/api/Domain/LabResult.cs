@@ -19,5 +19,15 @@ public class LabResult
     public int PageNumber { get; set; } = 1;
     public string? BoundingBoxJson { get; set; }
     public bool IsVerified { get; set; } = false;
+    public string? CorrectedTestName { get; set; }
+    public decimal? CorrectedValueNumeric { get; set; }
+    public string? CorrectedValueText { get; set; }
+    public string? CorrectedUnit { get; set; }
+    public decimal? CorrectedReferenceMin { get; set; }
+    public decimal? CorrectedReferenceMax { get; set; }
+    public string? CorrectedReferenceText { get; set; }
+    public string? CorrectionReason { get; set; }
+    public DateTimeOffset? CorrectedAt { get; set; }
+    public string? CorrectedBy { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

@@ -12,6 +12,7 @@ public class DocumentDbContext : DbContext
     public DbSet<MedicalReport> MedicalReports => Set<MedicalReport>();
     public DbSet<LabResult> LabResults => Set<LabResult>();
     public DbSet<AnalysisRun> AnalysisRuns => Set<AnalysisRun>();
+    public DbSet<ResultCorrectionAudit> ResultCorrectionAudits => Set<ResultCorrectionAudit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -64,6 +65,18 @@ public class DocumentDbContext : DbContext
 
             entity.HasIndex(e => e.MedicalReportId);
             entity.HasIndex(e => e.CalculatedStatus);
+        });
+
+        modelBuilder.Entity<ResultCorrectionAudit>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FieldName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.PreviousValue).HasMaxLength(500);
+            entity.Property(e => e.NewValue).HasMaxLength(500);
+            entity.Property(e => e.Reason).HasMaxLength(1000);
+            entity.Property(e => e.ChangedBy).HasMaxLength(255);
+            entity.HasOne(e => e.LabResult).WithMany().HasForeignKey(e => e.LabResultId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.LabResultId);
         });
 
         // AnalysisRun
