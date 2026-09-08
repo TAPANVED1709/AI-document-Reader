@@ -11,6 +11,11 @@ public class MedicalReport
     public DateTimeOffset UploadedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? AnalysedAt { get; set; }
 
+    public bool OcrRequired { get; set; }
+    public bool OcrApplied { get; set; }
+    public string ProcessingMode { get; set; } = "NATIVE";
+    public string? PageSourcesJson { get; set; }
+
     // Navigation collections
     public ICollection<LabResult> LabResults { get; set; } = new List<LabResult>();
     public ICollection<AnalysisRun> AnalysisRuns { get; set; } = new List<AnalysisRun>();

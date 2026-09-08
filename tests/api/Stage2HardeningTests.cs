@@ -1,0 +1,85 @@
+using System.Text.Json;
+using AI.DocumentReader.Api.Controllers;
+using AI.DocumentReader.Api.Domain;
+using AI.DocumentReader.Api.Infrastructure;
+using AI.DocumentReader.Api.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
+using Xunit;
+
+namespace AI.DocumentReader.Tests;
+
+public class Stage2HardeningTests
+{
+    [Theory]
+    [InlineData(false, false, "NATIVE", "NATIVE_TEXT", "Completed")]
+    [InlineData(true, true, "OCR", "OCR", "Completed")]
+    [InlineData(true, true, "HYBRID", "OCR", "Completed")]
+    [InlineData(true, false, "OCR", "OCR_UNAVAILABLE", "RequiresOcr")]
+    [InlineData(true, false, "HYBRID", "OCR_UNAVAILABLE", "RequiresOcr")]
+    [InlineData(true, true, "HYBRID", "OCR_FAILED", "RequiresOcr")]
+    public async Task UploadAndReloadPreserveStateConfidenceAndCoordinates(bool required, bool applied, string mode, string source, string status)
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        var options = new DbContextOptionsBuilder<DocumentDbContext>().UseSqlite(connection).Options;
+        await using var db = new DocumentDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var storage = new Mock<ILocalStorageService>();
+        storage.Setup(s => s.SaveReportAsync(It.IsAny<IFormFile>(), It.IsAny<CancellationToken>())).ReturnsAsync(("saved.pdf", "unused.pdf"));
+        var ai = new Mock<IAiServiceClient>();
+        const string box = "{\"x\":10,\"y\":20,\"width\":500,\"height\":30,\"page\":1,\"dpi\":300}";
+        // Deserialize the actual Python wire contract before passing it to the controller.
+        var json = JsonSerializer.Serialize(new {
+            requiresOcr = required, ocrRequired = required, ocrApplied = applied, processingMode = mode,
+            pages = new[] {1}, pageSources = new[] {new {page = 1, source}},
+            results = new[] {new {originalName="Hemoglobin", normalizedName="Hemoglobin", value=10.8m,
+                valueText="10.8", unit="g/dL", referenceMin=13m, referenceMax=17m, referenceText="13.0 - 17.0",
+                page=1, confidence=.21m, boundingBoxJson=box}}
+        });
+        var dto = JsonSerializer.Deserialize<AiAnalysisResponseDto>(json, new JsonSerializerOptions {PropertyNameCaseInsensitive=true})!;
+        ai.Setup(s => s.AnalyseDocumentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(dto);
+        ReportsController Controller() => new(db, storage.Object, ai.Object, new ReferenceRangeClassifier(), NullLogger<ReportsController>.Instance);
+        var file = new FormFile(new MemoryStream(new byte[1]), 0, 1, "file", "report.pdf") { Headers = new HeaderDictionary(), ContentType = "application/pdf" };
+        var uploaded = Assert.IsType<CreatedAtActionResult>(await Controller().UploadReport(file, default));
+        var uploadJson = JsonSerializer.SerializeToElement(uploaded.Value);
+        var id = uploadJson.GetProperty("id").GetGuid();
+        db.ChangeTracker.Clear();
+        var reloaded = Assert.IsType<OkObjectResult>(await Controller().GetReportById(id, default));
+        var result = JsonSerializer.SerializeToElement(reloaded.Value);
+        Assert.Equal(required, result.GetProperty("ocrRequired").GetBoolean());
+        Assert.Equal(applied, result.GetProperty("ocrApplied").GetBoolean());
+        Assert.Equal(mode, result.GetProperty("processingMode").GetString());
+        Assert.Equal(status, result.GetProperty("status").GetString());
+        var row = result.GetProperty("results")[0];
+        Assert.Equal(box, row.GetProperty("boundingBoxJson").GetString());
+        Assert.True(row.GetProperty("lowConfidence").GetBoolean());
+        Assert.Equal(.21m, row.GetProperty("extractionConfidence").GetDecimal());
+        Assert.Equal("LOW", row.GetProperty("calculatedStatus").GetString());
+        Assert.Equal(uploadJson.GetProperty("pageSources").GetRawText(), result.GetProperty("pageSources").GetRawText());
+    }
+
+    [Fact]
+    public async Task ExistingSqliteUpgradeIsAdditiveAndIdempotent()
+    {
+        using var connection = new SqliteConnection("Data Source=:memory:");
+        await connection.OpenAsync();
+        await using var db = new DocumentDbContext(new DbContextOptionsBuilder<DocumentDbContext>().UseSqlite(connection).Options);
+        await db.Database.ExecuteSqlRawAsync("CREATE TABLE MedicalReports (Id TEXT PRIMARY KEY); INSERT INTO MedicalReports (Id) VALUES ('existing')");
+        await Stage2SchemaUpgrade.ApplyAsync(db);
+        await Stage2SchemaUpgrade.ApplyAsync(db);
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT Id, OcrRequired, OcrApplied, ProcessingMode, PageSourcesJson FROM MedicalReports";
+        using var reader = await command.ExecuteReaderAsync();
+        Assert.True(await reader.ReadAsync());
+        Assert.Equal("existing", reader.GetString(0));
+        Assert.False(reader.GetBoolean(1));
+        Assert.False(reader.GetBoolean(2));
+        Assert.Equal("UNKNOWN", reader.GetString(3));
+        Assert.True(reader.IsDBNull(4));
+    }
+}

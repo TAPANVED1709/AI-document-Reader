@@ -63,7 +63,10 @@ class HealthResponse(BaseModel):
 
 
 class AnalysisResponse(BaseModel):
-    requiresOcr: bool
+    requiresOcr: bool  # Compatibility alias of ocrRequired
+    ocrRequired: bool
+    processingMode: str
+    pageSources: list[dict]
     ocrApplied: bool
     pages: List[int]
     results: List[LabResultItem]
@@ -134,78 +137,24 @@ async def analyse_document(file: UploadFile = File(...)):
             detail=f"Corrupted or unreadable PDF: {str(e)}",
         )
 
-    page_numbers = [p.page_number for p in pages]
+    if requires_ocr and is_tesseract_available():
+        needed = {p.page_number for p in pages if p.ocr_required}
+        replacements = {p.page_number: p for p in LocalOcrEngine.ocr_from_bytes(content, needed)}
+        pages = [replacements.get(p.page_number, p) for p in pages]
+    else:
+        for page in pages:
+            if page.ocr_required:
+                page.source = "OCR_UNAVAILABLE"
 
-    # -----------------------------------------------------------------------
-    # Stage 2: Local OCR fallback for scanned/image PDFs
-    # -----------------------------------------------------------------------
-    if requires_ocr:
-        if is_tesseract_available():
-            logger.info(
-                "Document '%s' has insufficient extractable text. Running local OCR...",
-                file.filename,
-            )
-            try:
-                ocr_pages = LocalOcrEngine.ocr_from_bytes(content)
-            except Exception as e:
-                logger.error("OCR failed for '%s': %s", file.filename, e)
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=f"Local OCR processing failed: {str(e)}",
-                )
-
-            # Parse OCR-extracted text through the same lab row parser
-            try:
-                extracted_results = parser.parse(ocr_pages)
-            except Exception as e:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Error while parsing OCR content: {str(e)}",
-                )
-
-            logger.info(
-                "OCR analysis complete for '%s': %d result(s) extracted.",
-                file.filename,
-                len(extracted_results),
-            )
-
-            return AnalysisResponse(
-                requiresOcr=False,
-                ocrApplied=True,
-                pages=page_numbers,
-                results=extracted_results,
-            )
-
-        else:
-            # Tesseract not installed — graceful Stage 1 fallback
-            logger.info(
-                "Document '%s' requires OCR but Tesseract is unavailable. "
-                "Returning requiresOcr=true.",
-                file.filename,
-            )
-            return AnalysisResponse(
-                requiresOcr=True,
-                ocrApplied=False,
-                pages=page_numbers,
-                results=[],
-            )
-
-    # -----------------------------------------------------------------------
-    # Text-based path: parse directly
-    # -----------------------------------------------------------------------
-    try:
-        extracted_results = parser.parse(pages)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error while parsing document content: {str(e)}",
-        )
-
+    applied = any(p.source == "OCR" for p in pages)
+    # Mode describes the required extraction strategy even when OCR is unavailable.
+    native = any(not p.ocr_required for p in pages)
+    mode = "HYBRID" if requires_ocr and native else "OCR" if requires_ocr else "NATIVE"
     return AnalysisResponse(
-        requiresOcr=False,
-        ocrApplied=False,
-        pages=page_numbers,
-        results=extracted_results,
+        requiresOcr=requires_ocr, ocrRequired=requires_ocr, ocrApplied=applied,
+        processingMode=mode, pages=[p.page_number for p in pages],
+        pageSources=[{"page": p.page_number, "source": p.source, "error": p.error} for p in pages],
+        results=parser.parse([p for p in pages if p.source in ("NATIVE_TEXT", "OCR")]),
     )
 
 

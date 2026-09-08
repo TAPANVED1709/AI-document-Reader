@@ -11,12 +11,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import fitz  # PyMuPDF
-from PIL import Image, ImageFilter
+from PIL import Image, ImageEnhance
 
-from core.extractor import PageData
+from core.extractor import PageData, OcrToken
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +67,8 @@ class LocalOcrEngine:
     # Minimum non-whitespace chars in OCR output to consider a page successful
     MIN_OCR_CHARS: int = 10
 
-    # Tesseract config: OEM 3 (default, LSTM), PSM 6 (assume a uniform block of text)
-    TESSERACT_CONFIG: str = "--oem 3 --psm 6"
+    # Tesseract config: OEM 3 (default, LSTM), PSM 4 (single column with variable-sized rows)
+    TESSERACT_CONFIG: str = "--oem 3 --psm 4"
 
     def __init__(self) -> None:
         if not _TESSERACT_AVAILABLE:
@@ -80,71 +80,52 @@ class LocalOcrEngine:
         self._pytesseract = pytesseract
 
     @classmethod
-    def ocr_from_bytes(cls, pdf_bytes: bytes) -> List[PageData]:
-        """
-        Run OCR on all pages of a PDF supplied as raw bytes.
-
-        Returns a list of :class:`~core.extractor.PageData` objects, one per
-        page, containing the OCR-extracted text. Pages that produce very little
-        text are included with whatever text was found (possibly empty string).
-
-        Raises:
-            RuntimeError: If Tesseract is not installed.
-            ValueError:   If the PDF bytes cannot be opened by PyMuPDF.
-        """
+    def ocr_from_bytes(cls, pdf_bytes: bytes, page_numbers=None) -> List[PageData]:
         engine = cls()
-        return engine._ocr_document(pdf_bytes)
-
-    def _ocr_document(self, pdf_bytes: bytes) -> List[PageData]:
-        """Internal: iterate pages, render, OCR, collect results."""
         try:
             doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         except Exception as exc:
             raise ValueError(f"Failed to open PDF for OCR: {exc}") from exc
+        with doc:
+            return [engine._ocr_page(page, idx + 1) for idx, page in enumerate(doc)
+                    if page_numbers is None or idx + 1 in page_numbers]
 
-        results: List[PageData] = []
+    def _ocr_page(self, page: fitz.Page, page_num: int) -> PageData:
         try:
-            for idx, page in enumerate(doc):
-                page_num = idx + 1
-                text = self._ocr_page(page, page_num)
-                char_count = len("".join(text.split()))
-                results.append(
-                    PageData(
-                        page_number=page_num,
-                        text=text,
-                        character_count=char_count,
-                    )
-                )
-        finally:
-            doc.close()
-
-        logger.info(
-            "OCR completed: %d page(s) processed, total chars=%d",
-            len(results),
-            sum(p.character_count for p in results),
-        )
-        return results
-
-    def _ocr_page(self, page: fitz.Page, page_num: int) -> str:
-        """Render a single fitz.Page to an image and run Tesseract OCR on it."""
-        try:
-            pil_image = self._render_page_to_pil(page)
-            preprocessed = self._preprocess_image(pil_image)
-            text: str = self._pytesseract.image_to_string(
-                preprocessed, config=self.TESSERACT_CONFIG
+            image = self._preprocess_image(self._render_page_to_pil(page))
+            data = self._pytesseract.image_to_data(
+                image, config=self.TESSERACT_CONFIG,
+                output_type=self._pytesseract.Output.DICT,
             )
-            char_count = len("".join(text.split()))
-            if char_count < self.MIN_OCR_CHARS:
-                logger.debug(
-                    "Page %d produced very few OCR characters (%d). "
-                    "Image quality may be low.",
-                    page_num,
-                    char_count,
-                )
-            return text
-        except Exception as exc:  # noqa: BLE001
+            tokens: list[OcrToken] = []
+            for i, raw in enumerate(data["text"]):
+                if not raw.strip():
+                    continue
+                try:
+                    confidence = float(data["conf"][i]) / 100.0
+                except (TypeError, ValueError):
+                    confidence = 0.0
+                tokens.append(OcrToken(
+                    text=raw.strip(), confidence=max(0.0, min(1.0, confidence)),
+                    x=int(data["left"][i]), y=int(data["top"][i]),
+                    width=int(data["width"][i]), height=int(data["height"][i]),
+                    page=page_num,
+                    line=(data["block_num"][i], data["par_num"][i], data["line_num"][i]),
+                ))
+            # Tesseract's data is structured, but its row order should not be
+            # treated as the source of truth. Keep the token metadata and
+            # reconstruct deterministic lines from block/paragraph/line IDs.
+            lines = {}
+            for token in tokens:
+                lines.setdefault(token.line, []).append(token)
+            text = "\n".join(
+                " ".join(token.text for token in sorted(lines[key], key=lambda t: t.x))
+                for key in sorted(lines)
+            )
+            return PageData(page_num, text, len("".join(text.split())), True, "OCR", tokens)
+        except Exception as exc:
             logger.warning("OCR failed on page %d: %s", page_num, exc)
-            return ""
+            return PageData(page_num, "", 0, True, "OCR_FAILED", error=str(exc))
 
     def _render_page_to_pil(self, page: fitz.Page) -> Image.Image:
         """Render a PyMuPDF page to a PIL Image at RENDER_DPI resolution."""
@@ -157,16 +138,9 @@ class LocalOcrEngine:
 
     @staticmethod
     def _preprocess_image(image: Image.Image) -> Image.Image:
-        """
-        Apply light pre-processing to improve Tesseract accuracy.
+        """Grayscale and mild contrast only; no thresholding or sharpening.
 
-        Steps:
-        1. Sharpen slightly to enhance character edges.
-        2. Return as-is (greyscale already set during rendering).
-
-        Heavy thresholding is intentionally avoided — it can hurt accuracy
-        on low-contrast or noisy scans. Tesseract's built-in binarisation
-        (OEM 3) handles most cases well.
+        Pillow ImageFilter does not implement adaptive thresholding. Preserve
+        decimals, signs and unit glyphs; leave binarization to Tesseract.
         """
-        sharpened = image.filter(ImageFilter.SHARPEN)
-        return sharpened
+        return ImageEnhance.Contrast(image.convert("L")).enhance(1.1)

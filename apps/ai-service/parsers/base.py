@@ -8,6 +8,9 @@ from core.extractor import PageData
 
 
 class LabResultItem(BaseModel):
+    boundingBoxJson: Optional[str] = None
+    fieldConfidences: dict[str, float] = Field(default_factory=dict)
+    lowConfidence: bool = False
     originalName: str = Field(..., description="Raw test name extracted from document")
     normalizedName: Optional[str] = Field(None, description="Normalized standard test name")
     value: Optional[float] = Field(None, description="Extracted numeric result if convertible")

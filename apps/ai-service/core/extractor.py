@@ -2,7 +2,8 @@
 PDF Text Extraction Engine using PyMuPDF (fitz).
 Extracts text per page and determines whether the document requires OCR.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import re
 from typing import List, Tuple
 
 import fitz  # PyMuPDF
@@ -10,10 +11,26 @@ from PIL import Image
 
 
 @dataclass
+class OcrToken:
+    text: str
+    confidence: float
+    x: int
+    y: int
+    width: int
+    height: int
+    page: int
+    line: tuple
+
+
+@dataclass
 class PageData:
     page_number: int
     text: str
     character_count: int
+    ocr_required: bool = False
+    source: str = "NATIVE_TEXT"
+    tokens: list[OcrToken] = field(default_factory=list)
+    error: str | None = None
 
 
 class PdfExtractor:
@@ -21,7 +38,14 @@ class PdfExtractor:
     Extracts text per page from PDF documents without performing OCR.
     Detects scanned or image-only documents.
     """
-    MIN_CHARS_THRESHOLD = 30  # Minimum extractable non-whitespace characters
+    MIN_CHARS_THRESHOLD = 20
+
+    @classmethod
+    def has_meaningful_text(cls, text: str) -> bool:
+        words = re.findall(r"[A-Za-z0-9]+", text)
+        return sum(len(w) for w in words) >= cls.MIN_CHARS_THRESHOLD and sum(
+            len(w) >= 2 and w.isalpha() for w in words
+        ) >= 2
 
     @classmethod
     def extract_from_bytes(cls, pdf_bytes: bytes) -> Tuple[List[PageData], bool]:
@@ -49,11 +73,13 @@ class PdfExtractor:
                 pages.append(PageData(
                     page_number=page_num,
                     text=page_text,
-                    character_count=char_count
+                    character_count=char_count,
+                    ocr_required=not cls.has_meaningful_text(page_text),
+                    source="NATIVE_TEXT" if cls.has_meaningful_text(page_text) else "OCR_PENDING",
                 ))
 
             # If document has almost no extractable text, mark requires_ocr = True
-            requires_ocr = (len(pages) == 0) or (total_text_chars < cls.MIN_CHARS_THRESHOLD)
+            requires_ocr = any(p.ocr_required for p in pages) or not pages
             return pages, requires_ocr
         finally:
             doc.close()

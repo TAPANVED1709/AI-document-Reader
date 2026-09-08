@@ -36,7 +36,7 @@ def _make_image_only_pdf(text: str = "Hemoglobin 10.8 g/dL 13.0 - 17.0") -> byte
     draw = ImageDraw.Draw(img)
 
     # Use default PIL font (no external font file needed)
-    draw.text((80, 200), text, fill=0)  # black text
+    draw.text((80, 200), text, fill=0, font=ImageFont.load_default(size=32))  # black text
 
     # 2. Save image as PNG to bytes
     img_buf = io.BytesIO()
@@ -240,7 +240,7 @@ class TestAnalyseEndpointWithOcr:
         assert response.status_code == 200
         body = response.json()
         assert body["ocrApplied"] is True
-        assert body["requiresOcr"] is False
+        assert body["requiresOcr"] is True
 
     @pytesseract_required
     def test_text_pdf_does_not_apply_ocr(self):

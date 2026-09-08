@@ -3,6 +3,7 @@ Modular Laboratory Report Row Parser (Version 1).
 Extracts laboratory test rows conservatively from plain-text PDF extractions.
 """
 import re
+import json
 from typing import List, Optional, Tuple
 from core.extractor import PageData
 from .base import BaseParser, LabResultItem
@@ -21,7 +22,7 @@ class LabRowParser(BaseParser):
         r"x10[³3\^]*/[uμ]L|10[³3\^]*/[uμ]L|x10[⁶6\^]*/[uμ]L|10[⁶6\^]*/[uμ]L|10\^9/L|"
         r"cells/[uμ]L|cells/mcL|[uμ]L|mcL|fL|fl|pg|"
         r"mmol/L|umol/L|pmol/L|nmol/L|mEq/L|IU/L|U/L|[uμ]IU/mL|mIU/L|"
-        r"%|mg/L|ug/L|sec|seconds|mm/hr|ratio)"
+        r"%|mg/L|ug/L|sec|seconds|mm/hr|mL/min|ratio)"
     )
 
     # Common test name normalization map
@@ -78,9 +79,9 @@ class LabRowParser(BaseParser):
         # Example: Hemoglobin     10.8     g/dL      13.0 - 17.0
         self.row_pattern_with_unit = re.compile(
             r"^(?P<name>[A-Za-z0-9\s,\-\(\)\/\.]+?)\s+"
-            r"(?P<value>[<>]?\s*\d+(?:\.\d+)?)\s+"
+            r"(?P<value>(?:[<>]=?|[≤≥])?\s*[+-]?\d+(?:\.\d+)?)\s+"
             r"(?P<unit>" + self.UNITS_PATTERN + r")\s+"
-            r"(?P<ref>(?:(?:<|<=|>|>=|Up to|Less than|More than)\s*\d+(?:\.\d+)?|\d+(?:\.\d+)?\s*(?:-|–|—|to)\s*\d+(?:\.\d+)?))",
+            r"(?P<ref>(?:(?:<=|>=|<|>|≤|≥|Up to|Less than|More than)\s*[+-]?\d+(?:\.\d+)?|[+-]?\d+(?:\.\d+)?\s*(?:-|–|—|to)\s*[+-]?\d+(?:\.\d+)?))",
             re.IGNORECASE
         )
 
@@ -88,23 +89,23 @@ class LabRowParser(BaseParser):
         # Example: HbA1c 6.8 4.0 - 5.6 % or Calcium 9.2 8.5 - 10.2
         self.row_pattern_no_unit = re.compile(
             r"^(?P<name>[A-Za-z0-9\s,\-\(\)\/\.]+?)\s+"
-            r"(?P<value>[<>]?\s*\d+(?:\.\d+)?)\s+"
-            r"(?P<ref>(?:(?:<|<=|>|>=|Up to|Less than|More than)\s*\d+(?:\.\d+)?|\d+(?:\.\d+)?\s*(?:-|–|—|to)\s*\d+(?:\.\d+)?))"
+            r"(?P<value>(?:[<>]=?|[≤≥])?\s*[+-]?\d+(?:\.\d+)?)\s+"
+            r"(?P<ref>(?:(?:<=|>=|<|>|≤|≥|Up to|Less than|More than)\s*[+-]?\d+(?:\.\d+)?|[+-]?\d+(?:\.\d+)?\s*(?:-|–|—|to)\s*[+-]?\d+(?:\.\d+)?))"
             r"(?:\s+(?P<unit>" + self.UNITS_PATTERN + r"))?",
             re.IGNORECASE
         )
 
         # Range extraction sub-patterns
         self.interval_range_pattern = re.compile(
-            r"^(\d+(?:\.\d+)?)\s*(?:-|–|—|to)\s*(\d+(?:\.\d+)?)$",
+            r"^([+-]?\d+(?:\.\d+)?)\s*(?:-|–|—|to)\s*([+-]?\d+(?:\.\d+)?)$",
             re.IGNORECASE
         )
         self.interval_upper_pattern = re.compile(
-            r"^(?:<|<=|Less than|Up to)\s*(\d+(?:\.\d+)?)$",
+            r"^(?:<=|<|≤|Less than|Up to)\s*([+-]?\d+(?:\.\d+)?)$",
             re.IGNORECASE
         )
         self.interval_lower_pattern = re.compile(
-            r"^(?:>|>=|Greater than|More than)\s*(\d+(?:\.\d+)?)$",
+            r"^(?:>=|>|≥|Greater than|More than)\s*([+-]?\d+(?:\.\d+)?)$",
             re.IGNORECASE
         )
 
@@ -113,8 +114,12 @@ class LabRowParser(BaseParser):
         results: List[LabResultItem] = []
 
         for page in pages:
-            lines = page.text.splitlines()
-            for line in lines:
+            token_lines = {}
+            for token in page.tokens:
+                token_lines.setdefault(token.line, []).append(token)
+            rows = [sorted(token_lines[key], key=lambda t: t.x) for key in sorted(token_lines)]
+            lines = [" ".join(t.text for t in row) for row in rows] if rows else page.text.splitlines()
+            for index, line in enumerate(lines):
                 cleaned_line = line.strip()
                 if not cleaned_line:
                     continue
@@ -125,9 +130,39 @@ class LabRowParser(BaseParser):
 
                 item = self._parse_line(cleaned_line, page.page_number)
                 if item:
+                    if page.source == "OCR":
+                        self._apply_ocr_metadata(item, cleaned_line, rows[index] if rows else [])
                     results.append(item)
 
         return results
+
+    def _apply_ocr_metadata(self, item, line, tokens):
+        match = self.row_pattern_with_unit.match(line) or self.row_pattern_no_unit.match(line)
+        spans = []
+        offset = 0
+        for token in tokens:
+            spans.append((offset, offset + len(token.text), token))
+            offset += len(token.text) + 1
+        used = []
+        for group in ("name", "value", "unit", "ref"):
+            start, end = match.span(group)
+            selected = [t for a, b, t in spans if a < end and b > start]
+            if start >= 0:
+                item.fieldConfidences[group] = min((t.confidence for t in selected), default=0.)
+                used.extend(selected)
+        item.confidence = min(item.confidence, min(item.fieldConfidences.values(), default=0.))
+        item.lowConfidence = item.confidence < 0.8
+        if tokens:
+            # The source row is the most useful review target. Include every
+            # OCR token on the reconstructed line, including separators or
+            # symbols that were not part of a regex capture.
+            row_tokens = tokens
+            x, y = min(t.x for t in row_tokens), min(t.y for t in row_tokens)
+            item.boundingBoxJson = json.dumps({
+                "x": x, "y": y, "width": max(t.x + t.width for t in row_tokens) - x,
+                "height": max(t.y + t.height for t in row_tokens) - y,
+                "page": item.page, "coordinateSpace": "rendered_pixels", "dpi": 300,
+            })
 
     def _is_header_or_metadata(self, line: str) -> bool:
         """Check if line is a table header or patient metadata row."""
@@ -198,7 +233,7 @@ class LabRowParser(BaseParser):
 
     def _parse_numeric_value(self, val_str: str) -> Optional[float]:
         """Convert string result to float, handling inequalities."""
-        cleaned = re.sub(r"[<>]", "", val_str).strip()
+        cleaned = re.sub(r"[<>=≤≥]", "", val_str).strip()
         try:
             return float(cleaned)
         except ValueError:

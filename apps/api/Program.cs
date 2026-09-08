@@ -77,6 +77,7 @@ using (var scope = app.Services.CreateScope())
     {
         logger.LogInformation("Verifying database connectivity and schema...");
         await dbContext.Database.EnsureCreatedAsync();
+        await AI.DocumentReader.Api.Infrastructure.Stage2SchemaUpgrade.ApplyAsync(dbContext);
         logger.LogInformation("Database ready.");
     }
     catch (Exception ex)

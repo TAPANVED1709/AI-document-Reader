@@ -13,14 +13,19 @@ public record AiLabResultDto(
     decimal? ReferenceMax,
     string? ReferenceText,
     int Page,
-    decimal Confidence
+    decimal Confidence,
+    string? BoundingBoxJson = null
 );
+
+public record AiPageSourceDto(int Page, string Source, string? Error = null);
 
 public record AiAnalysisResponseDto(
     bool RequiresOcr,
     bool OcrApplied,
     List<int> Pages,
-    List<AiLabResultDto> Results
+    List<AiLabResultDto> Results,
+    string ProcessingMode = "NATIVE",
+    List<AiPageSourceDto>? PageSources = null
 );
 
 public interface IAiServiceClient

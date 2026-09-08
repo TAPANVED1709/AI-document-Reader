@@ -178,8 +178,10 @@ file: <pdf file>
 ```json
 {
   "status": "Completed",
-  "requiresOcr": false,
+  "requiresOcr": true,
+  "ocrRequired": true,
   "ocrApplied": true,
+  "processingMode": "OCR",
   ...
 }
 ```
@@ -255,3 +257,40 @@ docker compose up --build
 | `Storage__ReportsPath` | `storage/reports` | Directory for uploaded PDFs |
 
 Copy `.env.example` to `.env` and adjust values for your environment.
+
+
+## Stage 2 hardening contract
+
+Extraction decisions are made per page. Meaningful native text is retained;
+only insufficient pages are rendered at 300 DPI for local Tesseract OCR.
+`ocrRequired` (also exposed as legacy `requiresOcr`) records whether any page
+needed OCR, independently of `ocrApplied`. `processingMode` is `NATIVE`, `OCR`,
+or `HYBRID` and describes the required strategy even when OCR is unavailable.
+`pageSources` reports `NATIVE_TEXT`, `OCR`, `OCR_UNAVAILABLE`, or `OCR_FAILED`.
+Successful engine execution with no recognized text still counts as OCR applied;
+it does not imply a successful lab parse.
+
+OCR uses `image_to_data` tokens with text, confidence (0–1), x/y/width/height,
+page and Tesseract line identifiers. Reconstruction retains these tokens.
+Result confidence is capped by the weakest token in the parsed name, numeric
+value, unit, and reference range; scores below 0.8 are marked `lowConfidence`.
+`boundingBoxJson` covers the relevant tokens in rendered pixels at 300 DPI,
+with a one-based page number. No frontend highlighting is implemented.
+Preprocessing uses grayscale and mild contrast, without sharpening or thresholding.
+Pillow ImageFilter does not provide adaptive thresholding.
+
+OCR state and bounding boxes persist across upload and report retrieval.
+Startup adds missing state columns to existing SQLite/SQL Server tables without
+removing data. Historical reports receive `processingMode=UNKNOWN`: their prior
+OCR use cannot be reconstructed. The SQL Server upgrade path requires schema
+alteration permission. SQLite upgrade is covered by an idempotence regression test.
+
+Processing requires no external service: PyMuPDF, Pillow, Tesseract and the parser
+run locally; classification is deterministic C#. The API communicates with the
+Python service over configured HTTP (localhost by default; `ai-service` in Docker).
+An operator can configure a remote URL or SQL Server, so local deployment remains
+a configuration responsibility. Dependency installation downloads packages;
+interactive Swagger documentation may fetch browser assets from a CDN.
+
+This checkout has no frontend package or source directory. Frontend lint/build
+cannot be certified here. See STAGE2_AUDIT.md for actual verification results.

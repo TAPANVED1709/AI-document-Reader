@@ -107,23 +107,12 @@ public class ReportsController : ControllerBase
             });
         }
 
-        // 4. Handle OCR requirement for scanned documents
-        //    - RequiresOcr=true  AND OcrApplied=false  → Tesseract not installed, cannot process
-        //    - RequiresOcr=false AND OcrApplied=true   → OCR was run locally, results available
-        if (aiResponse.RequiresOcr && !aiResponse.OcrApplied)
-        {
-            _logger.LogInformation(
-                "Document {ReportId} is a scanned PDF and Tesseract OCR is not available on the AI service.",
-                report.Id);
-            report.Status = ReportStatus.RequiresOcr;
-            report.AnalysedAt = DateTimeOffset.UtcNow;
-
-            analysisRun.Status = AnalysisStatus.Completed;
-            analysisRun.CompletedAt = DateTimeOffset.UtcNow;
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            return Ok(MapToDto(report, new List<LabResult>(), ocrApplied: false));
-        }
+        report.OcrRequired = aiResponse.RequiresOcr;
+        report.OcrApplied = aiResponse.OcrApplied;
+        report.ProcessingMode = aiResponse.ProcessingMode;
+        report.PageSourcesJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.PageSources);
+        var pendingOcr = aiResponse.RequiresOcr && (!aiResponse.OcrApplied ||
+            aiResponse.PageSources?.Any(p => p.Source is "OCR_UNAVAILABLE" or "OCR_FAILED") == true);
 
         if (aiResponse.OcrApplied)
         {
@@ -158,6 +147,7 @@ public class ReportsController : ControllerBase
                 CalculatedStatus = calculatedStatus,
                 ExtractionConfidence = extracted.Confidence,
                 PageNumber = extracted.Page,
+                BoundingBoxJson = extracted.BoundingBoxJson,
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
@@ -165,7 +155,7 @@ public class ReportsController : ControllerBase
             _dbContext.LabResults.Add(resultEntity);
         }
 
-        report.Status = ReportStatus.Completed;
+        report.Status = pendingOcr ? ReportStatus.RequiresOcr : ReportStatus.Completed;
         report.AnalysedAt = DateTimeOffset.UtcNow;
 
         analysisRun.Status = AnalysisStatus.Completed;
@@ -175,7 +165,7 @@ public class ReportsController : ControllerBase
 
         _logger.LogInformation("Report {ReportId} successfully analysed. {Count} tests saved.", report.Id, labResults.Count);
 
-        return CreatedAtAction(nameof(GetReportById), new { id = report.Id }, MapToDto(report, labResults, ocrApplied: aiResponse.OcrApplied));
+        return CreatedAtAction(nameof(GetReportById), new { id = report.Id }, MapToDto(report, labResults));
     }
 
     /// <summary>
@@ -193,7 +183,7 @@ public class ReportsController : ControllerBase
             return NotFound(new { error = $"Medical report '{id}' was not found." });
         }
 
-        return Ok(MapToDto(report, report.LabResults.ToList(), ocrApplied: false));
+        return Ok(MapToDto(report, report.LabResults.ToList()));
     }
 
     /// <summary>
@@ -217,7 +207,7 @@ public class ReportsController : ControllerBase
         return Ok(results.Select(MapResultToDto).ToList());
     }
 
-    private static object MapToDto(MedicalReport report, List<LabResult> results, bool ocrApplied = false)
+    private static object MapToDto(MedicalReport report, List<LabResult> results)
     {
         return new
         {
@@ -226,8 +216,11 @@ public class ReportsController : ControllerBase
             storedFileName = report.StoredFileName,
             fileSize = report.FileSize,
             status = report.Status.ToString(),
-            requiresOcr = report.Status == ReportStatus.RequiresOcr,
-            ocrApplied,
+            requiresOcr = report.OcrRequired,
+            ocrRequired = report.OcrRequired,
+            ocrApplied = report.OcrApplied,
+            processingMode = report.ProcessingMode,
+            pageSources = System.Text.Json.JsonSerializer.Deserialize<List<AiPageSourceDto>>(report.PageSourcesJson ?? "null"),
             uploadedAt = report.UploadedAt,
             analysedAt = report.AnalysedAt,
             resultsCount = results.Count,
@@ -252,6 +245,8 @@ public class ReportsController : ControllerBase
             calculatedStatus = result.CalculatedStatus.ToString(),
             extractionConfidence = result.ExtractionConfidence,
             pageNumber = result.PageNumber,
+            boundingBoxJson = result.BoundingBoxJson,
+            lowConfidence = result.ExtractionConfidence < 0.8m,
             isVerified = result.IsVerified,
             createdAt = result.CreatedAt
         };
