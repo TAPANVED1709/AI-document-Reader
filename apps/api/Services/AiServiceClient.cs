@@ -54,7 +54,7 @@ public class AiServiceClient : IAiServiceClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<AiServiceClient> _logger;
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = true
     };

@@ -20,6 +20,8 @@ public class DocumentDbContext : DbContext
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<SecurityAuditEvent> SecurityAuditEvents => Set<SecurityAuditEvent>();
     public DbSet<PatientAccessGrant> PatientAccessGrants => Set<PatientAccessGrant>();
+    public DbSet<ProcessingJob> ProcessingJobs => Set<ProcessingJob>();
+    public DbSet<IngestionIdempotencyRecord> IngestionIdempotencyRecords => Set<IngestionIdempotencyRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,6 +34,24 @@ public class DocumentDbContext : DbContext
         modelBuilder.Entity<SecurityAuditEvent>().HasKey(x => x.Id);
         modelBuilder.Entity<PatientAccessGrant>().HasKey(x => x.Id);
         modelBuilder.Entity<PatientAccessGrant>().HasIndex(x => new { x.PatientId, x.GrantedToUserId, x.GrantedToOrganizationId });
+
+        modelBuilder.Entity<ProcessingJob>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.LastErrorCode).HasMaxLength(80);
+            entity.Property(x => x.LastErrorSafeMessage).HasMaxLength(500);
+            entity.Property(x => x.ProcessingVersion).HasMaxLength(40).IsRequired();
+            entity.Property(x => x.WorkerId).HasMaxLength(100);
+            entity.HasOne(x => x.Report).WithMany().HasForeignKey(x => x.ReportId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(x => new { x.Status, x.NextRetryAt });
+            entity.HasIndex(x => x.ReportId).IsUnique();
+        });
+        modelBuilder.Entity<IngestionIdempotencyRecord>(entity =>
+        {
+            entity.HasKey(x => x.Id); entity.Property(x => x.Key).HasMaxLength(200).IsRequired();
+            entity.HasIndex(x => new { x.OrganizationId, x.Key }).IsUnique();
+        });
 
         // MedicalReport
         modelBuilder.Entity<MedicalReport>(entity =>

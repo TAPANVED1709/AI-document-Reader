@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace AI.DocumentReader.Api.Services;
 
 public interface ILocalStorageService
@@ -11,11 +13,12 @@ public interface ILocalStorageService
 public class LocalStorageService : ILocalStorageService
 {
     private readonly string _storageDirectory;
-    private const long MaxFileSizeInBytes = 20 * 1024 * 1024; // 20 MB development limit
+    private readonly long _maxFileSizeInBytes;
 
     public LocalStorageService(IConfiguration configuration, IWebHostEnvironment environment)
     {
-        var configuredPath = configuration["Storage:ReportsPath"] ?? "storage/reports";
+        var configuredPath = configuration["Storage:ReportsPath"] ?? configuration["Storage:RootPath"] ?? "storage/reports";
+        _maxFileSizeInBytes = configuration.GetValue("Security:MaxUploadBytes", 20 * 1024 * 1024L);
 
         // Resolve path relative to solution/project root if not rooted
         if (Path.IsPathRooted(configuredPath))
@@ -54,9 +57,9 @@ public class LocalStorageService : ILocalStorageService
             throw new ArgumentException("No file was uploaded or the uploaded file is empty.");
         }
 
-        if (file.Length > MaxFileSizeInBytes)
+        if (file.Length > _maxFileSizeInBytes)
         {
-            throw new ArgumentException($"File size exceeds maximum allowed limit of {MaxFileSizeInBytes / (1024 * 1024)} MB.");
+            throw new ArgumentException($"File size exceeds maximum allowed limit of {_maxFileSizeInBytes / (1024 * 1024)} MB.");
         }
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -70,6 +73,10 @@ public class LocalStorageService : ILocalStorageService
         {
             throw new ArgumentException($"Unsupported content type '{file.ContentType}'. Expected 'application/pdf'.");
         }
+        using var header = file.OpenReadStream();
+        Span<byte> signature = stackalloc byte[5];
+        if (header.Read(signature) != 5 || Encoding.ASCII.GetString(signature) != "%PDF-")
+            throw new ArgumentException("The uploaded file is not a valid PDF document.");
     }
 
     public async Task<(string storedFileName, string absolutePath)> SaveReportAsync(IFormFile file, CancellationToken cancellationToken = default)

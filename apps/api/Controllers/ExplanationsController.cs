@@ -17,7 +17,8 @@ public class ExplanationsController : ControllerBase
     private readonly IAiServiceClient _ai;
     private readonly IMedicalResourceAuthorizationService _authorization;
     private readonly ISecurityAuditService? _audit;
-    public ExplanationsController(DocumentDbContext db, IAiServiceClient ai, IMedicalResourceAuthorizationService authorization, ISecurityAuditService? audit = null) { _db = db; _ai = ai; _authorization = authorization; _audit = audit; }
+    private readonly OllamaConcurrencyLimiter _limiter;
+    public ExplanationsController(DocumentDbContext db, IAiServiceClient ai, IMedicalResourceAuthorizationService authorization, OllamaConcurrencyLimiter limiter, ISecurityAuditService? audit = null) { _db = db; _ai = ai; _authorization = authorization; _limiter = limiter; _audit = audit; }
 
     [HttpGet("local-ai/health")]
     public async Task<IActionResult> Health(CancellationToken cancellationToken) => Ok(await _ai.LocalHealthAsync(cancellationToken));
@@ -45,7 +46,10 @@ public class ExplanationsController : ControllerBase
         var selected = resultId.HasValue ? report.LabResults.Where(r => r.Id == resultId).ToList() : report.LabResults.ToList();
         if (resultId.HasValue && selected.Count == 0) return NotFound(new { error = "Result was not found." });
         var request = new AiExplanationRequestDto(mode, new { resultCount = selected.Count, reviewRequired = selected.Count(r => r.ReviewRequired) }, selected.Select(ToStructured).ToList());
-        var response = await _ai.GenerateExplanationAsync(request, cancellationToken);
+        await _limiter.Gate.WaitAsync(cancellationToken);
+        AiExplanationResponseDto response;
+        try { response = await _ai.GenerateExplanationAsync(request, cancellationToken); }
+        finally { _limiter.Gate.Release(); }
         var record = new ExplanationRecord { MedicalReportId = reportId, LabResultId = resultId, Mode = mode, Provider = response.Provider, Model = response.Model, PromptVersion = response.PromptVersion, GeneratedText = response.Summary, GeneratedJson = JsonSerializer.Serialize(response), CreatedAt = DateTimeOffset.UtcNow };
         _db.ExplanationRecords.Add(record);
         await _db.SaveChangesAsync(cancellationToken);
@@ -58,7 +62,7 @@ public class ExplanationsController : ControllerBase
         r.CorrectedValueNumeric ?? r.ValueNumeric,
         r.CorrectedValueText ?? r.ValueText,
         r.CorrectedUnit ?? r.Unit,
-        r.ReferenceText,
+        r.CorrectedReferenceText ?? r.ReferenceText,
         r.CalculatedStatus.ToString(),
         r.ReportedFlag,
         r.IsVerified ? "HUMAN_VERIFIED" : r.CorrectedAt.HasValue ? "HUMAN_CORRECTED" : r.ReviewRequired ? "REVIEW_REQUIRED" : "AUTO_ACCEPTED",

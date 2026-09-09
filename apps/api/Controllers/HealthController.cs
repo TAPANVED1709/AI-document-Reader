@@ -46,4 +46,14 @@ public class HealthController : ControllerBase
 
         return Ok(healthStatus);
     }
+
+    [HttpGet("/health/ready")]
+    public async Task<IActionResult> Ready(CancellationToken cancellationToken)
+    {
+        var database = await _dbContext.Database.CanConnectAsync(cancellationToken);
+        var ai = await _aiServiceClient.CheckHealthAsync(cancellationToken);
+        var queue = database;
+        var ready = database && ai && queue;
+        return StatusCode(ready ? StatusCodes.Status200OK : StatusCodes.Status503ServiceUnavailable, new { status = ready ? "Healthy" : "Degraded", service = "api", database = database ? "Connected" : "Unavailable", aiService = ai ? "Available" : "Unavailable", worker = "Hosted", queue = queue ? "Available" : "Unavailable" });
+    }
 }

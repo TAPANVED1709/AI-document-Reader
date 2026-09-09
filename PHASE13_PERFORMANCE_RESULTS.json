@@ -1,0 +1,274 @@
+{
+  "status": "EXECUTED",
+  "executedAt": "2026-09-09T17:47:06.628335+00:00",
+  "composeProject": "phase13e-b90ef82f",
+  "workflow": "authenticated LAB_STAFF HTTP ingestion, real Docker SQL/API/Tesseract",
+  "host": {
+    "os": "Windows-11-10.0.26200-SP0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "tesseractVersion": "tesseract 5.5.0",
+    "maxConcurrentJobs": 2,
+    "logicalProcessors": 12,
+    "ramBytes": 16869351424
+  },
+  "testOverrides": {
+    "Processing:RetryBaseSeconds": 20
+  },
+  "aggregate": {
+    "total": 10,
+    "completed": 4,
+    "reviewRequired": 6,
+    "failed": 0,
+    "duplicates": 0,
+    "averageQueueWaitMs": 3597.4,
+    "averageProcessingDurationMs": 1579.2,
+    "maxProcessingDurationMs": 3361
+  },
+  "observedQueue": {
+    "peakProcessing": 2,
+    "peakQueued": 10,
+    "method": "Server-side queue-health aggregate snapshots; exact active-call instrumentation is separately covered by Phase13OperationalTests"
+  },
+  "reports": [
+    {
+      "jobId": "3885047A-7D09-46B3-8AFF-1F6CCEBFF72B",
+      "reportId": "2EB2F785-E0F0-481E-95F2-0524209FEAF4",
+      "queuedAt": "2026-09-09T17:46:35.6601900Z",
+      "startedAt": "2026-09-09T17:46:43.9514479Z",
+      "completedAt": "2026-09-09T17:46:45.8954107Z",
+      "queueWaitMs": 8291,
+      "processingDurationMs": 1944,
+      "terminalStatus": "REVIEW_REQUIRED",
+      "fixtureType": "hybrid",
+      "processingMode": "HYBRID",
+      "resultCount": 8,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "NATIVE_TEXT"
+        },
+        {
+          "page": 2,
+          "source": "OCR"
+        },
+        {
+          "page": 3,
+          "source": "NATIVE_TEXT"
+        }
+      ],
+      "reviewReasonCodes": [
+        "LOW_NAME_CONFIDENCE",
+        "LOW_REFERENCE_CONFIDENCE",
+        "LOW_VALUE_CONFIDENCE"
+      ]
+    },
+    {
+      "jobId": "872E0C5B-B3A4-4EF3-B8AD-21DE461FA89D",
+      "reportId": "F101915B-D47F-41D2-A6C7-8047A625D241",
+      "queuedAt": "2026-09-09T17:46:35.4202395Z",
+      "startedAt": "2026-09-09T17:46:37.1817662Z",
+      "completedAt": "2026-09-09T17:46:37.4762059Z",
+      "queueWaitMs": 1761,
+      "processingDurationMs": 295,
+      "terminalStatus": "COMPLETED",
+      "fixtureType": "native",
+      "processingMode": "NATIVE",
+      "resultCount": 3,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "NATIVE_TEXT"
+        }
+      ],
+      "reviewReasonCodes": []
+    },
+    {
+      "jobId": "F1182C54-487E-4CFE-9B63-4550E1199D07",
+      "reportId": "E395F5E4-31E0-4486-A3ED-37A3F272457A",
+      "queuedAt": "2026-09-09T17:46:35.3394434Z",
+      "startedAt": "2026-09-09T17:46:37.0089992Z",
+      "completedAt": "2026-09-09T17:46:37.3381403Z",
+      "queueWaitMs": 1669,
+      "processingDurationMs": 330,
+      "terminalStatus": "COMPLETED",
+      "fixtureType": "native",
+      "processingMode": "NATIVE",
+      "resultCount": 3,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "NATIVE_TEXT"
+        }
+      ],
+      "reviewReasonCodes": []
+    },
+    {
+      "jobId": "33B54BD8-80F2-47E6-93A9-683C7656E018",
+      "reportId": "711250E5-A52C-4D3D-89C0-776475A49ADD",
+      "queuedAt": "2026-09-09T17:46:35.5011266Z",
+      "startedAt": "2026-09-09T17:46:37.8529884Z",
+      "completedAt": "2026-09-09T17:46:41.2131830Z",
+      "queueWaitMs": 2351,
+      "processingDurationMs": 3361,
+      "terminalStatus": "REVIEW_REQUIRED",
+      "fixtureType": "scanned",
+      "processingMode": "OCR",
+      "resultCount": 3,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "OCR"
+        }
+      ],
+      "reviewReasonCodes": [
+        "LOW_NAME_CONFIDENCE",
+        "LOW_REFERENCE_CONFIDENCE",
+        "LOW_VALUE_CONFIDENCE"
+      ]
+    },
+    {
+      "jobId": "31AD4AED-1958-4ECD-8B82-7CD551022692",
+      "reportId": "8E0F86FD-CECC-40DD-96F1-6F6FBB2D4FF5",
+      "queuedAt": "2026-09-09T17:46:35.2269600Z",
+      "startedAt": "2026-09-09T17:46:36.5557173Z",
+      "completedAt": "2026-09-09T17:46:36.6216981Z",
+      "queueWaitMs": 1329,
+      "processingDurationMs": 66,
+      "terminalStatus": "COMPLETED",
+      "fixtureType": "native",
+      "processingMode": "NATIVE",
+      "resultCount": 3,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "NATIVE_TEXT"
+        }
+      ],
+      "reviewReasonCodes": []
+    },
+    {
+      "jobId": "08495FB7-875A-4FA2-BEAD-7FFA256AC69D",
+      "reportId": "720706F2-5067-4B80-B362-AAF5AE986317",
+      "queuedAt": "2026-09-09T17:46:35.5814254Z",
+      "startedAt": "2026-09-09T17:46:41.2428742Z",
+      "completedAt": "2026-09-09T17:46:43.9287115Z",
+      "queueWaitMs": 5661,
+      "processingDurationMs": 2686,
+      "terminalStatus": "REVIEW_REQUIRED",
+      "fixtureType": "scanned",
+      "processingMode": "OCR",
+      "resultCount": 3,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "OCR"
+        }
+      ],
+      "reviewReasonCodes": [
+        "LOW_NAME_CONFIDENCE",
+        "LOW_REFERENCE_CONFIDENCE",
+        "LOW_VALUE_CONFIDENCE"
+      ]
+    },
+    {
+      "jobId": "18C85512-EE73-4343-BF58-9F7BEFB82326",
+      "reportId": "B0C50B7F-D418-4143-9D6E-97DF1D26A24F",
+      "queuedAt": "2026-09-09T17:46:35.4622706Z",
+      "startedAt": "2026-09-09T17:46:37.7108552Z",
+      "completedAt": "2026-09-09T17:46:39.6102919Z",
+      "queueWaitMs": 2248,
+      "processingDurationMs": 1900,
+      "terminalStatus": "REVIEW_REQUIRED",
+      "fixtureType": "scanned",
+      "processingMode": "OCR",
+      "resultCount": 3,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "OCR"
+        }
+      ],
+      "reviewReasonCodes": [
+        "LOW_NAME_CONFIDENCE",
+        "LOW_REFERENCE_CONFIDENCE",
+        "LOW_VALUE_CONFIDENCE"
+      ]
+    },
+    {
+      "jobId": "CDD2AA14-640B-4738-A2D7-AADDDC470820",
+      "reportId": "DF4A1233-AB9B-49E0-972D-B6EF8145CD35",
+      "queuedAt": "2026-09-09T17:46:35.5378328Z",
+      "startedAt": "2026-09-09T17:46:39.6771333Z",
+      "completedAt": "2026-09-09T17:46:42.8192797Z",
+      "queueWaitMs": 4140,
+      "processingDurationMs": 3142,
+      "terminalStatus": "REVIEW_REQUIRED",
+      "fixtureType": "scanned",
+      "processingMode": "OCR",
+      "resultCount": 3,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "OCR"
+        }
+      ],
+      "reviewReasonCodes": [
+        "LOW_NAME_CONFIDENCE",
+        "LOW_REFERENCE_CONFIDENCE",
+        "LOW_VALUE_CONFIDENCE"
+      ]
+    },
+    {
+      "jobId": "6FC0EA30-BE8F-42D9-95B4-C87032C38AE8",
+      "reportId": "FF89D668-C6B7-4FD7-8A4F-6D14D758D009",
+      "queuedAt": "2026-09-09T17:46:35.6189869Z",
+      "startedAt": "2026-09-09T17:46:42.8604472Z",
+      "completedAt": "2026-09-09T17:46:44.6846772Z",
+      "queueWaitMs": 7242,
+      "processingDurationMs": 1824,
+      "terminalStatus": "REVIEW_REQUIRED",
+      "fixtureType": "hybrid",
+      "processingMode": "HYBRID",
+      "resultCount": 8,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "NATIVE_TEXT"
+        },
+        {
+          "page": 2,
+          "source": "OCR"
+        },
+        {
+          "page": 3,
+          "source": "NATIVE_TEXT"
+        }
+      ],
+      "reviewReasonCodes": [
+        "LOW_NAME_CONFIDENCE",
+        "LOW_REFERENCE_CONFIDENCE",
+        "LOW_VALUE_CONFIDENCE"
+      ]
+    },
+    {
+      "jobId": "5E012102-2111-43FC-A26E-CA94E8DA26E0",
+      "reportId": "5EB166CC-6DB9-4FCA-A964-2BE062CD2285",
+      "queuedAt": "2026-09-09T17:46:35.2894091Z",
+      "startedAt": "2026-09-09T17:46:36.5714445Z",
+      "completedAt": "2026-09-09T17:46:36.8153940Z",
+      "queueWaitMs": 1282,
+      "processingDurationMs": 244,
+      "terminalStatus": "COMPLETED",
+      "fixtureType": "native",
+      "processingMode": "NATIVE",
+      "resultCount": 3,
+      "pageSources": [
+        {
+          "page": 1,
+          "source": "NATIVE_TEXT"
+        }
+      ],
+      "reviewReasonCodes": []
+    }
+  ]
+}

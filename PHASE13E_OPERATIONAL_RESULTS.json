@@ -1,0 +1,142 @@
+{
+  "phase": "13E",
+  "checks": {
+    "aiRecovery": {
+      "job": {
+        "reportId": "ca3feadf-47af-4339-a246-0d967e274182",
+        "jobId": "8ea18cf3-312e-44d0-9ba9-9a89cdee102b",
+        "status": "QUEUED"
+      },
+      "observed": [
+        [
+          "QUEUED",
+          0
+        ],
+        [
+          "PROCESSING",
+          1
+        ],
+        [
+          "RETRYING",
+          1
+        ]
+      ],
+      "retry": {
+        "reportId": "ca3feadf-47af-4339-a246-0d967e274182",
+        "jobId": "8ea18cf3-312e-44d0-9ba9-9a89cdee102b",
+        "status": "RETRYING",
+        "attemptCount": 1,
+        "createdAt": "2026-09-09T17:45:54.6241414+00:00",
+        "startedAt": "2026-09-09T17:45:56.2939914+00:00",
+        "safeErrorCode": "AI_SERVICE_UNAVAILABLE"
+      },
+      "nextRetryAt": "2026-09-09T17:46:24.5294247Z",
+      "final": {
+        "reportId": "ca3feadf-47af-4339-a246-0d967e274182",
+        "jobId": "8ea18cf3-312e-44d0-9ba9-9a89cdee102b",
+        "status": "COMPLETED",
+        "attemptCount": 2,
+        "createdAt": "2026-09-09T17:45:54.6241414+00:00",
+        "startedAt": "2026-09-09T17:46:26.4772818+00:00",
+        "completedAt": "2026-09-09T17:46:26.7542904+00:00"
+      },
+      "counts": {
+        "jobs": 1,
+        "analysisRuns": 1,
+        "results": 3,
+        "issues": 0
+      }
+    },
+    "ollamaFallback": {
+      "httpStatus": 200,
+      "provider": "deterministic",
+      "usedFallback": true,
+      "validatedFindings": 3,
+      "reportUnchanged": true,
+      "invalidIdentifierStatus": 404,
+      "destination": "http://127.0.0.1:11434 (unreachable)"
+    },
+    "tesseractUnavailable": {
+      "scanned": {
+        "state": {
+          "reportId": "9ee1a45f-c7ed-463b-b99a-c569d2f4feba",
+          "jobId": "52ba40fa-7dde-488a-adb9-bf57ff374f3e",
+          "status": "REVIEW_REQUIRED",
+          "attemptCount": 1,
+          "createdAt": "2026-09-09T17:46:30.5726256+00:00",
+          "startedAt": "2026-09-09T17:46:32.527389+00:00",
+          "completedAt": "2026-09-09T17:46:32.8224037+00:00",
+          "safeErrorCode": "OCR_UNAVAILABLE"
+        },
+        "ocrRequired": true,
+        "ocrApplied": false,
+        "resultCount": 0,
+        "reportStatus": "RequiresOcr"
+      },
+      "native": {
+        "state": {
+          "reportId": "f9edb8a0-94ca-4395-bdf0-2edffa381ccf",
+          "jobId": "b65bfeb1-5eef-4aa4-957f-e3af3acea2c4",
+          "status": "COMPLETED",
+          "attemptCount": 1,
+          "createdAt": "2026-09-09T17:46:32.9469036+00:00",
+          "startedAt": "2026-09-09T17:46:34.5419757+00:00",
+          "completedAt": "2026-09-09T17:46:34.5662516+00:00"
+        },
+        "ocrRequired": false,
+        "ocrApplied": false,
+        "resultCount": 3
+      }
+    },
+    "benchmark": {
+      "total": 10,
+      "completed": 4,
+      "reviewRequired": 6,
+      "failed": 0,
+      "duplicates": 0,
+      "averageQueueWaitMs": 3597.4,
+      "averageProcessingDurationMs": 1579.2,
+      "maxProcessingDurationMs": 3361
+    },
+    "audit": {
+      "actions": [
+        {
+          "Action": "EXPLANATION_GENERATE",
+          "count": 1
+        },
+        {
+          "Action": "LAB_INGESTION",
+          "count": 13
+        },
+        {
+          "Action": "LOGIN_SUCCESS",
+          "count": 1
+        },
+        {
+          "Action": "PROCESSING_COMPLETED",
+          "count": 13
+        },
+        {
+          "Action": "PROCESSING_RETRY",
+          "count": 1
+        },
+        {
+          "Action": "PROCESSING_STARTED",
+          "count": 14
+        },
+        {
+          "Action": "REPORT_QUEUED",
+          "count": 13
+        },
+        {
+          "Action": "REPORT_VIEW",
+          "count": 14
+        }
+      ],
+      "metadataRowsInspected": 70,
+      "metadataContainsSensitiveContent": false,
+      "processingFailed": "not applicable: this pass restores before retry exhaustion; bounded terminal failure covered by worker regression"
+    }
+  },
+  "status": "PASSED"
+}

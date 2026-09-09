@@ -6,6 +6,7 @@ public enum ReportStatus
     Processing,
     Completed,
     RequiresOcr,
+    RequiresReview,
     Failed
 }
 
@@ -22,4 +23,14 @@ public enum AnalysisStatus
     Running,
     Completed,
     Failed
+}
+
+public enum ProcessingJobStatus
+{
+    QUEUED,
+    PROCESSING,
+    RETRYING,
+    COMPLETED,
+    REVIEW_REQUIRED,
+    FAILED
 }

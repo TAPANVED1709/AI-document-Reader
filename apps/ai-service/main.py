@@ -9,7 +9,6 @@ import os
 from typing import List
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from core.extractor import PdfExtractor
@@ -32,15 +31,6 @@ app = FastAPI(
         "Supports text-based PDFs (Stage 1) and scanned/image PDFs via local "
         "Tesseract OCR (Stage 2). No data is transmitted to external services."
     ),
-)
-
-# Enable CORS for local cross-origin calls
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
 )
 
 # Instantiate the active parser (shared between text and OCR paths)
@@ -100,6 +90,12 @@ async def health_check():
         tesseractVersion=get_tesseract_version(),
     )
 
+@app.get("/health/ready")
+async def readiness_check():
+    storage = os.getenv("STORAGE_ROOT", "storage/reports")
+    storage_ready = os.path.isdir(storage) or os.access(os.path.dirname(storage) or ".", os.W_OK)
+    return {"status": "Healthy" if storage_ready else "Degraded", "service": "ai-service", "tesseract": "Healthy" if is_tesseract_available() else "Unavailable", "storage": "Writable" if storage_ready else "Unavailable", "ollama": (await local_ai_health())["available"]}
+
 
 @app.get("/health/local-ai")
 async def local_ai_health():
@@ -147,6 +143,22 @@ async def analyse_document(file: UploadFile = File(...)):
 
     try:
         content = await file.read()
+        if len(content) == 0:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Uploaded PDF file is empty (0 bytes).")
+        max_pages = int(os.getenv("MAX_PDF_PAGES", "50"))
+        try:
+            import fitz
+            document = fitz.open(stream=content, filetype="pdf")
+            page_count = len(document)
+            document.close()
+            if page_count > max_pages:
+                raise HTTPException(status_code=413, detail="PAGE_LIMIT_EXCEEDED")
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=400, detail="PDF_INVALID")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

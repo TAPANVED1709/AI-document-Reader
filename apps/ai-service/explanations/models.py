@@ -23,8 +23,8 @@ class ExplanationRequest(BaseModel):
 
 class ExplanationResponse(BaseModel):
     summary: str
-    validatedFindings: list[dict] = Field(default_factory=list)
-    requiresVerification: list[dict] = Field(default_factory=list)
+    validatedFindings: list[dict[str, str]] = Field(default_factory=list)
+    requiresVerification: list[dict[str, str]] = Field(default_factory=list)
     disclaimer: str
     provider: str
     model: str

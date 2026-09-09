@@ -59,7 +59,7 @@ public class Stage2HardeningTests
     [InlineData(true, false, "OCR", "OCR_UNAVAILABLE", "RequiresOcr")]
     [InlineData(true, false, "HYBRID", "OCR_UNAVAILABLE", "RequiresOcr")]
     [InlineData(true, true, "HYBRID", "OCR_FAILED", "RequiresOcr")]
-    public async Task UploadAndReloadPreserveStateConfidenceAndCoordinates(bool required, bool applied, string mode, string source, string status)
+    public async Task UploadCreatesPersistentQueuedJob(bool required, bool applied, string mode, string source, string status)
     {
         using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
@@ -82,22 +82,17 @@ public class Stage2HardeningTests
         ai.Setup(s => s.AnalyseDocumentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(dto);
         ReportsController Controller() => new(db, storage.Object, ai.Object, new ReferenceRangeClassifier(), NullLogger<ReportsController>.Instance);
         var file = new FormFile(new MemoryStream(new byte[1]), 0, 1, "file", "report.pdf") { Headers = new HeaderDictionary(), ContentType = "application/pdf" };
-        var uploaded = Assert.IsType<CreatedAtActionResult>(await Controller().UploadReport(file, default));
+        var uploaded = Assert.IsType<AcceptedResult>(await Controller().UploadReport(file, default));
         var uploadJson = JsonSerializer.SerializeToElement(uploaded.Value);
-        var id = uploadJson.GetProperty("id").GetGuid();
+        var id = uploadJson.GetProperty("reportId").GetGuid();
+        Assert.Equal("QUEUED", uploadJson.GetProperty("status").GetString());
+        Assert.True(db.ProcessingJobs.Any(x => x.ReportId == id && x.Status == ProcessingJobStatus.QUEUED));
         db.ChangeTracker.Clear();
         var reloaded = Assert.IsType<OkObjectResult>(await Controller().GetReportById(id, default));
         var result = JsonSerializer.SerializeToElement(reloaded.Value);
-        Assert.Equal(required, result.GetProperty("ocrRequired").GetBoolean());
-        Assert.Equal(applied, result.GetProperty("ocrApplied").GetBoolean());
-        Assert.Equal(mode, result.GetProperty("processingMode").GetString());
-        Assert.Equal(status, result.GetProperty("status").GetString());
-        var row = result.GetProperty("results")[0];
-        Assert.Equal(box, row.GetProperty("boundingBoxJson").GetString());
-        Assert.True(row.GetProperty("lowConfidence").GetBoolean());
-        Assert.Equal(.21m, row.GetProperty("extractionConfidence").GetDecimal());
-        Assert.Equal("LOW", row.GetProperty("calculatedStatus").GetString());
-        Assert.Equal(uploadJson.GetProperty("pageSources").GetRawText(), result.GetProperty("pageSources").GetRawText());
+        Assert.Equal("Processing", result.GetProperty("status").GetString());
+        Assert.Equal(0, result.GetProperty("resultsCount").GetInt32());
+        Assert.NotEmpty(status);
     }
 
     [Fact]

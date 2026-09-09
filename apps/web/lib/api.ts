@@ -9,11 +9,14 @@ const apiFetch = async (input: RequestInfo | URL, init: RequestInit = {}) => {
   if (csrfToken && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) headers.set('X-XSRF-TOKEN', csrfToken);
   return fetch(input, { ...init, headers, credentials: 'include' });
 };
-import type { ExplanationResponse, Report, LabResult, TrendResponse, TimelineEvent, TimelineResult } from './types';
+import type { ExplanationResponse, Report, QueuedReport, LabResult, TrendResponse, TimelineEvent, TimelineResult } from './types';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 async function readError(response: Response) { const body = await response.json().catch(() => null); return body?.error || 'The document service could not process this report.'; }
-export async function uploadReport(file: File): Promise<Report> { const form = new FormData(); form.append('file', file); const response = await apiFetch(`${API_BASE_URL}/api/reports/upload`, { method: 'POST', body: form }); if (!response.ok) throw new Error(await readError(response)); return response.json(); }
+export async function uploadReport(file: File): Promise<Report | QueuedReport> { const form = new FormData(); form.append('file', file); const response = await apiFetch(`${API_BASE_URL}/api/reports/upload`, { method: 'POST', body: form }); if (!response.ok) throw new Error(await readError(response)); return response.json(); }
+export async function getReport(reportId: string): Promise<Report> { const response = await apiFetch(`${API_BASE_URL}/api/reports/${reportId}`); if (!response.ok) throw new Error(await readError(response)); return response.json(); }
+export async function getProcessingStatus(reportId: string) { const response = await apiFetch(`${API_BASE_URL}/api/reports/${reportId}/processing-status`); if (!response.ok) throw new Error(await readError(response)); return response.json() as Promise<{ reportId: string; jobId: string; status: string; safeErrorCode?: string }>; }
+export async function getReviewQueue() { const response = await apiFetch(`${API_BASE_URL}/api/review-queue`); if (!response.ok) throw new Error(await readError(response)); return response.json() as Promise<{ reportId: string; fileName: string; uploadedAt: string; reportDate?: string; panel: string; issueCount: number; highestExtractionSeverity: string; processingMode: string; status: string }[]>; }
 export async function verifyResult(reportId: string, resultId: string) { const response = await apiFetch(`${API_BASE_URL}/api/reports/${reportId}/results/${resultId}/verify`, { method: 'POST' }); if (!response.ok) throw new Error(await readError(response)); }
 export async function correctResult(reportId: string, resultId: string, payload: Record<string, unknown>): Promise<LabResult> { const response = await apiFetch(`${API_BASE_URL}/api/reports/${reportId}/results/${resultId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!response.ok) throw new Error(await readError(response)); return response.json(); }
 

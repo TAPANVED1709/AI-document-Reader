@@ -1,0 +1,96 @@
+services:
+  web:
+    build: ./apps/web
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost/api}
+    networks: [internal]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      sqlserver: { condition: service_healthy }
+      ai-service: { condition: service_healthy }
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:?Set a SQL Server connection string}
+      Cors__AllowedOrigins__0: ${CORS_ORIGIN:-https://localhost}
+      AiService__BaseUrl: http://ai-service:8000
+      Storage__RootPath: /var/lib/ai-document-reader/reports
+      Security__MaxUploadBytes: ${MAX_UPLOAD_BYTES:-20971520}
+    volumes:
+      - report_storage:/var/lib/ai-document-reader/reports
+    expose: ["8080"]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  ai-service:
+    build: ./apps/ai-service
+    restart: unless-stopped
+    environment:
+      LOCAL_LLM_PROVIDER: ${LOCAL_LLM_PROVIDER:-ollama}
+      LOCAL_LLM_BASE_URL: ${LOCAL_LLM_BASE_URL:-http://ollama:11434}
+      LOCAL_LLM_MODEL: ${LOCAL_LLM_MODEL:-}
+      STORAGE_ROOT: /var/lib/ai-document-reader/reports
+      MAX_PDF_PAGES: ${MAX_PDF_PAGES:-50}
+    expose: ["8000"]
+    volumes:
+      - report_storage:/var/lib/ai-document-reader/reports
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-CU15-ubuntu-22.04
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: ${MSSQL_PID:-Developer}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Set MSSQL_SA_PASSWORD}
+    volumes:
+      - sql_data:/var/opt/mssql
+    expose: ["1433"]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -C -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  ollama:
+    image: ollama/ollama:0.11.10
+    profiles: [local-ai]
+    restart: unless-stopped
+    volumes: [ollama_data:/root/.ollama]
+    expose: ["11434"]
+    networks: [internal]
+
+  proxy:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    depends_on: [web, api]
+    ports: ["443:443"]
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+    networks: [internal]
+
+volumes:
+  sql_data:
+  report_storage:
+  ollama_data:
+networks:
+  internal:
+    driver: bridge

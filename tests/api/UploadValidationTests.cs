@@ -29,7 +29,12 @@ public class UploadValidationTests
 
     private static IFormFile CreateMockFile(string fileName, string contentType, long sizeBytes)
     {
-        var stream = new MemoryStream(new byte[sizeBytes]);
+        var bytes = new byte[sizeBytes];
+        if (fileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase) && sizeBytes >= 5)
+        {
+            "%PDF-"u8.CopyTo(bytes);
+        }
+        var stream = new MemoryStream(bytes);
         return new FormFile(stream, 0, sizeBytes, "file", fileName)
         {
             Headers = new HeaderDictionary(),

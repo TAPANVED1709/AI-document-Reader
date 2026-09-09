@@ -67,14 +67,19 @@ builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IReferenceRangeClassifier, ReferenceRangeClassifier>();
 builder.Services.AddScoped<IMedicalResourceAuthorizationService, MedicalResourceAuthorizationService>();
 builder.Services.AddScoped<ISecurityAuditService, SecurityAuditService>();
+builder.Services.AddScoped<IReportProcessingService, ReportProcessingService>();
+builder.Services.AddSingleton<OllamaConcurrencyLimiter>();
+builder.Services.AddHostedService<ProcessingWorker>();
 builder.Services.AddRateLimiter(options =>
 {
     var authLimit = builder.Configuration.GetValue("Security:AuthRequestsPerMinute", 10);
     var uploadLimit = builder.Configuration.GetValue("Security:UploadRequestsPerMinute", 30);
     var explanationLimit = builder.Configuration.GetValue("Security:ExplanationRequestsPerMinute", 20);
+    var ingestionLimit = builder.Configuration.GetValue("Security:IngestionRequestsPerMinute", 30);
     options.AddFixedWindowLimiter("auth", o => { o.PermitLimit = authLimit; o.Window = TimeSpan.FromMinutes(1); o.QueueLimit = 0; });
     options.AddFixedWindowLimiter("upload", o => { o.PermitLimit = uploadLimit; o.Window = TimeSpan.FromMinutes(1); o.QueueLimit = 0; });
     options.AddFixedWindowLimiter("explanation", o => { o.PermitLimit = explanationLimit; o.Window = TimeSpan.FromMinutes(1); o.QueueLimit = 0; });
+    options.AddFixedWindowLimiter("ingestion", o => { o.PermitLimit = ingestionLimit; o.Window = TimeSpan.FromMinutes(1); o.QueueLimit = 0; });
 });
 
 var aiServiceUrl = builder.Configuration["AiService:BaseUrl"] ?? "http://localhost:8000";

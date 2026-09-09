@@ -5,6 +5,7 @@ import re
 from abc import ABC, abstractmethod
 from urllib.request import Request, urlopen
 from urllib.error import URLError
+from urllib.parse import urlsplit
 from .models import ExplanationRequest, ExplanationResponse, StructuredResult
 from .prompts import build_prompt, PROMPT_VERSION
 
@@ -46,7 +47,10 @@ class OllamaProvider(LocalExplanationProvider):
         self.base_url = (base_url or os.getenv("LOCAL_LLM_BASE_URL","http://127.0.0.1:11434")).rstrip("/")
         self.model = model or os.getenv("LOCAL_LLM_MODEL","")
         self.timeout = float(timeout or os.getenv("LOCAL_LLM_TIMEOUT_SECONDS","30"))
-        if not self.base_url.startswith(("http://127.0.0.1:", "http://localhost:")):
+        endpoint = urlsplit(self.base_url)
+        if (endpoint.scheme != "http" or endpoint.hostname not in {"127.0.0.1", "localhost", "ollama"}
+                or endpoint.username or endpoint.password or endpoint.path not in {"", "/"}
+                or endpoint.query or endpoint.fragment):
             raise ValueError("Local explanation provider must use localhost.")
     async def generate(self, request):
         if not self.model: raise RuntimeError("LOCAL_LLM_MODEL is not configured.")

@@ -107,108 +107,13 @@ public class ReportsController : ControllerBase
 
         _dbContext.MedicalReports.Add(report);
         _dbContext.AnalysisRuns.Add(analysisRun);
+        var processingJob = new ProcessingJob { ReportId = report.Id, Status = ProcessingJobStatus.QUEUED, MaxAttempts = 3, ProcessingVersion = "13B.1" };
+        _dbContext.ProcessingJobs.Add(processingJob);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        // 3. Invoke Python AI Intelligence Service
-        AiAnalysisResponseDto aiResponse;
-        try
-        {
-            aiResponse = await _aiServiceClient.AnalyseDocumentAsync(absolutePath, file.FileName, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "AI analysis execution failed for report {ReportId}.", report.Id);
-            report.Status = ReportStatus.Failed;
-            analysisRun.Status = AnalysisStatus.Failed;
-            analysisRun.CompletedAt = DateTimeOffset.UtcNow;
-            analysisRun.ErrorMessage = ex.Message;
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            return StatusCode(StatusCodes.Status502BadGateway, new
-            {
-                error = "AI Document Intelligence service encountered an error while processing the report.",
-                details = ex.Message,
-                reportId = report.Id
-            });
-        }
-
-        report.OcrRequired = aiResponse.RequiresOcr;
-        report.OcrApplied = aiResponse.OcrApplied;
-        report.ProcessingMode = aiResponse.ProcessingMode;
-        report.PageSourcesJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.PageSources);
-        report.DocumentType = aiResponse.DocumentType;
-        report.DocumentTypeConfidence = aiResponse.DocumentTypeConfidence;
-        report.DocumentTypeSignalsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.DocumentTypeSignals ?? []);
-        report.StructuredDataJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.StructuredData ?? new Dictionary<string, object>());
-        var pendingOcr = aiResponse.RequiresOcr && (!aiResponse.OcrApplied ||
-            aiResponse.PageSources?.Any(p => p.Source is "OCR_UNAVAILABLE" or "OCR_FAILED") == true);
-
-        if (aiResponse.OcrApplied)
-        {
-            _logger.LogInformation(
-                "Document {ReportId} was processed via local OCR. Extracted {Count} result(s).",
-                report.Id, aiResponse.Results.Count);
-        }
-
-        // 5. Apply deterministic reference-range classification and save results
-        var labResults = new List<LabResult>();
-        foreach (var extracted in aiResponse.Results)
-        {
-            // CRITICAL SAFETY REQUIREMENT:
-            // Classification strictly uses reference bounds extracted from the document
-            var calculatedStatus = _rangeClassifier.Classify(
-                extracted.Value,
-                extracted.ReferenceMin,
-                extracted.ReferenceMax, extracted.ReferenceType
-            );
-
-            var resultEntity = new LabResult
-            {
-                MedicalReportId = report.Id,
-                OriginalTestName = extracted.OriginalName,
-                NormalizedTestName = extracted.NormalizedName,
-                ValueNumeric = extracted.Value,
-                ValueText = extracted.ValueText,
-                Unit = extracted.Unit,
-                OriginalUnit = extracted.OriginalUnit ?? extracted.Unit,
-                NormalizedUnit = extracted.NormalizedUnit ?? extracted.Unit,
-                ValueOperator = extracted.ValueOperator,
-                ReferenceMin = extracted.ReferenceMin,
-                ReferenceMax = extracted.ReferenceMax,
-                ReferenceText = extracted.ReferenceText,
-                ReferenceType = extracted.ReferenceType,
-                ReferenceOperator = extracted.ReferenceOperator,
-                ReportedFlag = extracted.ReportedFlag,
-                SectionName = extracted.Section,
-                MethodText = extracted.MethodText,
-                ReviewRequired = extracted.ReviewRequired,
-                AmbiguityReason = extracted.AmbiguityReason,
-                FlagDiscrepancy = extracted.Discrepancy,
-                CalculatedStatus = calculatedStatus,
-                ExtractionConfidence = extracted.Confidence,
-                PageNumber = extracted.Page,
-                BoundingBoxJson = extracted.BoundingBoxJson,
-                CreatedAt = DateTimeOffset.UtcNow
-            };
-
-            if (extracted.ValidationIssues is not null)
-                resultEntity.ValidationIssues = extracted.ValidationIssues.Select(i => new ValidationIssue { Code = i.Code, Severity = i.Severity, FieldName = i.Field, Message = i.Message, RequiresReview = i.RequiresReview }).ToList();
-            labResults.Add(resultEntity);
-            _dbContext.LabResults.Add(resultEntity);
-        }
-
-        report.Status = pendingOcr ? ReportStatus.RequiresOcr : ReportStatus.Completed;
-        report.AnalysedAt = DateTimeOffset.UtcNow;
-
-        analysisRun.Status = AnalysisStatus.Completed;
-        analysisRun.CompletedAt = DateTimeOffset.UtcNow;
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        await Audit("REPORT_UPLOAD", "MedicalReport", report.Id, true, cancellationToken);
-
-        _logger.LogInformation("Report {ReportId} successfully analysed. {Count} tests saved.", report.Id, labResults.Count);
-
-        return CreatedAtAction(nameof(GetReportById), new { id = report.Id }, MapToDto(report, labResults));
+        await Audit("REPORT_QUEUED", "MedicalReport", report.Id, true, cancellationToken);
+        _logger.LogInformation("Report queued jobId={JobId} reportId={ReportId} status={Status}", processingJob.Id, report.Id, processingJob.Status);
+        return Accepted(new { reportId = report.Id, jobId = processingJob.Id, status = processingJob.Status.ToString() });
     }
 
     /// <summary>

@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/.next/
+**/.git/
+**/.pytest_cache/
+**/__pycache__/
+storage/reports/*
+*.db
+*.log
