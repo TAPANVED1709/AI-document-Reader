@@ -12,6 +12,10 @@ public class MedicalReport
     public DateTimeOffset? AnalysedAt { get; set; }
     public DateTimeOffset? ReportDate { get; set; }
     public string ReportDateSource { get; set; } = "UPLOAD_DATE";
+    public string DocumentType { get; set; } = "UNKNOWN";
+    public decimal DocumentTypeConfidence { get; set; }
+    public string? DocumentTypeSignalsJson { get; set; }
+    public string? StructuredDataJson { get; set; }
 
     public bool OcrRequired { get; set; }
     public bool OcrApplied { get; set; }

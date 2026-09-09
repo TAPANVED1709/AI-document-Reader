@@ -19,6 +19,8 @@ from parsers.lab_parser import LabRowParser
 from validation import ValidationEngine, load_config
 from explanations import ExplanationRequest, ExplanationResponse, provider_from_config, PROMPT_VERSION
 from trends import TrendRequest, build_trend, summarize_trend
+from document_types import classify_document
+from parsers.document_parsers import parse_discharge, parse_prescription, parse_radiology
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +78,10 @@ class AnalysisResponse(BaseModel):
     pages: List[int]
     results: List[LabResultItem]
     validationSummary: dict
+    documentType: str = "UNKNOWN"
+    documentTypeConfidence: float = 0.0
+    documentTypeSignals: list[str] = []
+    structuredData: dict = {}
 
 
 # ---------------------------------------------------------------------------
@@ -172,7 +178,16 @@ async def analyse_document(file: UploadFile = File(...)):
             if page.ocr_required:
                 page.source = "OCR_UNAVAILABLE"
 
-    parsed_results = parser.parse([p for p in pages if p.source in ("NATIVE_TEXT", "OCR")])
+    parsed_pages = [p for p in pages if p.source in ("NATIVE_TEXT", "OCR")]
+    classification = classify_document("\n".join(p.text for p in parsed_pages))
+    structured_data = {}
+    if classification.document_type == "DISCHARGE_SUMMARY":
+        structured_data = parse_discharge("\n".join(p.text for p in parsed_pages))
+    elif classification.document_type == "PRESCRIPTION":
+        structured_data = parse_prescription("\n".join(p.text for p in parsed_pages))
+    elif classification.document_type == "RADIOLOGY_REPORT":
+        structured_data = parse_radiology("\n".join(p.text for p in parsed_pages))
+    parsed_results = parser.parse(parsed_pages) if classification.document_type == "LAB_REPORT" else []
     page_sources = {p.page_number: p.source for p in pages}
     for result in parsed_results: result.sourceType = page_sources.get(result.page)
     validator.validate(parsed_results)
@@ -186,6 +201,8 @@ async def analyse_document(file: UploadFile = File(...)):
         processingMode=mode, pages=[p.page_number for p in pages],
         pageSources=[{"page": p.page_number, "source": p.source, "error": p.error} for p in pages],
         results=validated_results, validationSummary={"totalResults": len(validated_results), "autoAccepted": sum(not r.reviewRequired for r in validated_results), "reviewRequired": sum(r.reviewRequired for r in validated_results), "verified": 0, "corrected": 0},
+        documentType=classification.document_type, documentTypeConfidence=classification.confidence,
+        documentTypeSignals=classification.signals, structuredData=structured_data,
     )
 
 

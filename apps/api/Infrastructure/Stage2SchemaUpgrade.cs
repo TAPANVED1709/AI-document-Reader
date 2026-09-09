@@ -17,6 +17,8 @@ public static class Stage2SchemaUpgrade
             ["ProcessingMode"] = "TEXT NOT NULL DEFAULT 'UNKNOWN'",
             ["PageSourcesJson"] = "TEXT NULL"
             , ["ReportDate"] = "TEXT NULL", ["ReportDateSource"] = "TEXT NOT NULL DEFAULT 'UPLOAD_DATE'"
+            , ["DocumentType"] = "TEXT NOT NULL DEFAULT 'UNKNOWN'", ["DocumentTypeConfidence"] = "REAL NOT NULL DEFAULT 0"
+            , ["DocumentTypeSignalsJson"] = "TEXT NULL", ["StructuredDataJson"] = "TEXT NULL"
         };
         var correctionColumns = new Dictionary<string, string>
         {

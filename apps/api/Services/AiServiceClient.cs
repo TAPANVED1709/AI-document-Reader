@@ -37,7 +37,9 @@ public record AiAnalysisResponseDto(
     List<int> Pages,
     List<AiLabResultDto> Results,
     string ProcessingMode = "NATIVE",
-    List<AiPageSourceDto>? PageSources = null
+    List<AiPageSourceDto>? PageSources = null,
+    string DocumentType = "UNKNOWN", decimal DocumentTypeConfidence = 0,
+    List<string>? DocumentTypeSignals = null, Dictionary<string, object>? StructuredData = null
 );
 
 public interface IAiServiceClient

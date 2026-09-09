@@ -123,6 +123,10 @@ public class ReportsController : ControllerBase
         report.OcrApplied = aiResponse.OcrApplied;
         report.ProcessingMode = aiResponse.ProcessingMode;
         report.PageSourcesJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.PageSources);
+        report.DocumentType = aiResponse.DocumentType;
+        report.DocumentTypeConfidence = aiResponse.DocumentTypeConfidence;
+        report.DocumentTypeSignalsJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.DocumentTypeSignals ?? []);
+        report.StructuredDataJson = System.Text.Json.JsonSerializer.Serialize(aiResponse.StructuredData ?? new Dictionary<string, object>());
         var pendingOcr = aiResponse.RequiresOcr && (!aiResponse.OcrApplied ||
             aiResponse.PageSources?.Any(p => p.Source is "OCR_UNAVAILABLE" or "OCR_FAILED") == true);
 
@@ -314,6 +318,10 @@ public class ReportsController : ControllerBase
             analysedAt = report.AnalysedAt,
             reportDate = report.ReportDate ?? report.UploadedAt,
             reportDateSource = report.ReportDateSource,
+            documentType = report.DocumentType,
+            documentTypeConfidence = report.DocumentTypeConfidence,
+            documentTypeSignals = System.Text.Json.JsonSerializer.Deserialize<List<string>>(report.DocumentTypeSignalsJson ?? "[]"),
+            structuredData = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(report.StructuredDataJson ?? "{}"),
             resultsCount = results.Count,
             validationSummary = new { totalResults = results.Count, autoAccepted = results.Count(r => !r.ReviewRequired), reviewRequired = results.Count(r => r.ReviewRequired), verified = results.Count(r => r.IsVerified), corrected = results.Count(r => r.CorrectedAt.HasValue) },
             results = results.Select(r => MapResultToDto(r, report)).ToList()
