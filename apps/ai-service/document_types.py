@@ -15,9 +15,14 @@ class DocumentClassification:
 
 def classify_document(text: str) -> DocumentClassification:
     value = text.lower()
-    lab_rows = re.findall(r"\b\d+(?:\.\d+)?\s*[a-z%/]+\s+\d+(?:\.\d+)?\s*[-–]\s*\d+(?:\.\d+)?", value)
+    lab_rows = re.findall(r"\b(?:[<>]=?)?\s*(?:\d+(?:\.\d+)?|\.\d+)\s*[a-z%/µ³^]+\s+(?:\d+(?:\.\d+)?|\.\d+)\s*[-–]\s*(?:\d+(?:\.\d+)?|\.\d+)", value)
     if len(lab_rows) >= 2:
         return DocumentClassification(LAB, 0.9, ["numeric result with unit and reference interval"])
+    pathology_signals = re.findall(r"\b(?:cbc|hemogram|lft|kft|rft|lipid profile|thyroid profile|diabetes profile|iron studies|urine routine|urine examination|coagulation|electrolytes|serology|hematology|biochemistry)\b", value)
+    if len(pathology_signals) >= 1 and (lab_rows or re.search(r"\b(?:result|reference range|unit|test|negative|positive|non[- ]?reactive|absent|present)\b", value)):
+        return DocumentClassification(LAB, 0.86, ["pathology panel heading"])
+    if re.search(r"\blaboratory report\b", value) and re.search(r"\b(?:age|sex|gender)\s*[:\-]", value):
+        return DocumentClassification(LAB, 0.84, ["laboratory report demographics"])
     if re.search(r"^\s*(?:prescription|rx)\s*$", value, re.I | re.M):
         return DocumentClassification(PRESCRIPTION, 0.88, ["prescription heading"])
     patterns = {

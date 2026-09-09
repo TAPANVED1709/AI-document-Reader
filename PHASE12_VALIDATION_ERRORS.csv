@@ -1,0 +1,4 @@
+documentId,page,expectedField,expectedValue,actualValue,reviewState,confidence,errorCategory,severity
+low-quality-ocr,1,numeric,10.8,108.0,REVIEW_REQUIRED,0.88,NUMERIC_MISMATCH,C
+expanded-panel-09,1,reference,Absent,Absen,REVIEW_REQUIRED,0.7,REFERENCE_MISMATCH,C
+advanced-layout-multipage,1,reference,4.0 - 11.0,4.0 - 11.0 Platelet count 220 K/uL 150 - 450 Sample hemolysed,REVIEW_REQUIRED,0.55,REFERENCE_MISMATCH,C

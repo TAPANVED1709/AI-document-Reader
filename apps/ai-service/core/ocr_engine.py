@@ -10,6 +10,8 @@ All processing is local — no data is sent to any external service.
 from __future__ import annotations
 
 import logging
+import os
+import shutil
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
@@ -29,6 +31,11 @@ def _detect_tesseract() -> Tuple[bool, str]:
     """Probe whether pytesseract and the Tesseract binary are reachable."""
     try:
         import pytesseract  # type: ignore
+        if shutil.which("tesseract") is None:
+            candidates = [os.path.join(os.environ.get("ProgramFiles", r"C:\Program Files"), "Tesseract-OCR", "tesseract.exe"), os.path.join(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), "Tesseract-OCR", "tesseract.exe")]
+            installed = next((path for path in candidates if os.path.isfile(path)), None)
+            if installed:
+                pytesseract.pytesseract.tesseract_cmd = installed
         version = pytesseract.get_tesseract_version()
         return True, str(version)
     except Exception as exc:  # noqa: BLE001

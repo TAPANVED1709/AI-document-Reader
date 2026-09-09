@@ -89,6 +89,12 @@ class ValidationEngine:
         except (KeyError, TypeError, ValueError, json.JSONDecodeError): return False
 
     def _conflicting_duplicate(self, a, b):
+        if a.methodText and b.methodText and a.methodText != b.methodText:
+            return False
+        # Without source geometry there is no safe way to distinguish a
+        # legitimate repeated analyte row from a conflicting duplicate.
+        if not a.boundingBoxJson or not b.boundingBoxJson:
+            return False
         return a.page == b.page and a.normalizedName and a.normalizedName == b.normalizedName and a.value != b.value
 
     @staticmethod

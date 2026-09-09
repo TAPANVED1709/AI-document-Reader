@@ -12,7 +12,7 @@ class ReferenceRange:
 
 
 class ReferenceRangeParser:
-    NUMBER = r"[+-]?\d+(?:\.\d+)?"
+    NUMBER = r"[+-]?(?:\d+(?:\.\d+)?|\.\d+)"
 
     def parse(self, value: str | None, *, age_years: float | None = None, sex: str | None = None) -> ReferenceRange:
         if not value or not value.strip():

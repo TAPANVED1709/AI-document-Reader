@@ -1,0 +1,783 @@
+{
+  "validationType": "SYNTHETIC_DEVELOPMENT_VALIDATION",
+  "datasetSize": 25,
+  "documents": [
+    {
+      "documentId": "clean-cbc",
+      "category": "A_CLEAN_TEXT_PDF",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 3,
+      "panels": [
+        "Complete Blood Count"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "clean-chemistry",
+      "category": "A_CLEAN_TEXT_PDF",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 5,
+      "panels": [
+        "Kidney Function Test",
+        "Liver Function Test"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "scanned-pathology",
+      "category": "B_SCANNED_PDF",
+      "sourceType": "OCR",
+      "expectedRows": 2,
+      "panels": [
+        "Complete Blood Count"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "hybrid-multipage",
+      "category": "C_HYBRID_PDF_F_MULTI_PAGE",
+      "sourceType": "HYBRID",
+      "expectedRows": 2,
+      "panels": [
+        "Kidney Function Test",
+        "Liver Function Test"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "qualitative-urine-serology",
+      "category": "I_QUALITATIVE_RESULTS",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 3,
+      "panels": [
+        "Urine Examination"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "demographic-range",
+      "category": "J_AGE_SEX_RANGES",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 1,
+      "panels": [],
+      "realOcr": false
+    },
+    {
+      "documentId": "low-quality-ocr",
+      "category": "D_LOW_QUALITY_OCR_N_DECIMAL_O_CHARACTER_CONFUSIONS",
+      "sourceType": "OCR",
+      "expectedRows": 1,
+      "panels": [
+        "Complete Blood Count"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "duplicate-methods",
+      "category": "P_DUPLICATES_Q_DIFFERENT_METHODS_R_COMMENTS_METHOD",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 2,
+      "panels": [
+        "Liver Function Test"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "panel-sweep",
+      "category": "K_MISSING_UNITS_L_MISSING_RANGES_M_FLAGS_S_UNKNOWN_PANELS",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 9,
+      "panels": [
+        "Coagulation",
+        "Diabetes Profile",
+        "Electrolytes",
+        "Inflammation",
+        "Iron Studies",
+        "Lipid Profile",
+        "Serology",
+        "Thyroid Profile",
+        "Vitamin Profile"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-00",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "HYBRID",
+      "expectedRows": 8,
+      "panels": [
+        "Complete Blood Count"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-01",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 8,
+      "panels": [
+        "Liver Function Test"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-02",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 8,
+      "panels": [
+        "Renal Function Test"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-03",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "HYBRID",
+      "expectedRows": 8,
+      "panels": [
+        "Diabetes Profile"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-04",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 8,
+      "panels": [
+        "Lipid Profile"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-05",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 8,
+      "panels": [
+        "Thyroid Profile"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-06",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "HYBRID",
+      "expectedRows": 8,
+      "panels": [
+        "Iron Studies"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-07",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 8,
+      "panels": [
+        "Inflammation"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-08",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 8,
+      "panels": [
+        "Coagulation"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-09",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "HYBRID",
+      "expectedRows": 8,
+      "panels": [
+        "Urine Examination"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "expanded-panel-10",
+      "category": "EXPANDED_PANEL_COVERAGE",
+      "sourceType": "NATIVE_TEXT",
+      "expectedRows": 8,
+      "panels": [
+        "Serology"
+      ],
+      "realOcr": false
+    },
+    {
+      "documentId": "real-ocr-cbc",
+      "category": "B_REAL_TESSERACT_SCANNED",
+      "sourceType": "OCR",
+      "expectedRows": 3,
+      "panels": [
+        "Complete Blood Count"
+      ],
+      "realOcr": true
+    },
+    {
+      "documentId": "real-ocr-lft",
+      "category": "B_REAL_TESSERACT_SCANNED",
+      "sourceType": "OCR",
+      "expectedRows": 3,
+      "panels": [
+        "Liver Function Test"
+      ],
+      "realOcr": true
+    },
+    {
+      "documentId": "real-ocr-hba1c",
+      "category": "B_REAL_TESSERACT_SCANNED",
+      "sourceType": "OCR",
+      "expectedRows": 2,
+      "panels": [
+        "Diabetes Profile"
+      ],
+      "realOcr": true
+    },
+    {
+      "documentId": "real-ocr-urine",
+      "category": "B_REAL_TESSERACT_SCANNED",
+      "sourceType": "OCR",
+      "expectedRows": 3,
+      "panels": [
+        "Urine Examination"
+      ],
+      "realOcr": true
+    },
+    {
+      "documentId": "advanced-layout-multipage",
+      "category": "HYBRID",
+      "sourceType": "HYBRID",
+      "expectedRows": 6,
+      "panels": [
+        "Complete Blood Count",
+        "Kidney Function Test",
+        "Liver Function Test"
+      ],
+      "realOcr": false
+    }
+  ],
+  "formatDistribution": {
+    "HYBRID": 6,
+    "NATIVE_TEXT": 13,
+    "OCR": 6
+  },
+  "panelDistribution": {
+    "Coagulation": 9,
+    "Complete Blood Count": 20,
+    "Diabetes Profile": 11,
+    "Electrolytes": 1,
+    "Inflammation": 9,
+    "Iron Studies": 9,
+    "Kidney Function Test": 4,
+    "Lipid Profile": 9,
+    "Liver Function Test": 19,
+    "Renal Function Test": 8,
+    "Serology": 9,
+    "Thyroid Profile": 9,
+    "Urine Examination": 14,
+    "Vitamin Profile": 1
+  },
+  "per_format_metrics": {
+    "HYBRID": {
+      "expectedRows": 32,
+      "extractedRows": 32,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 96.88,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "LOW_QUALITY_OCR": {
+      "expectedRows": 1,
+      "extractedRows": 1,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 0.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "MULTI_COLUMN": {
+      "expectedRows": 6,
+      "extractedRows": 6,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 83.33,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "MULTI_PAGE": {
+      "expectedRows": 2,
+      "extractedRows": 2,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "NATIVE": {
+      "expectedRows": 79,
+      "extractedRows": 79,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "SCANNED": {
+      "expectedRows": 13,
+      "extractedRows": 13,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    }
+  },
+  "per_panel_metrics": {
+    "Coagulation": {
+      "expectedRows": 9,
+      "extractedRows": 9,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Complete Blood Count": {
+      "expectedRows": 20,
+      "extractedRows": 20,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 95.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 95.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Diabetes Profile": {
+      "expectedRows": 11,
+      "extractedRows": 11,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Electrolytes": {
+      "expectedRows": 1,
+      "extractedRows": 1,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Inflammation": {
+      "expectedRows": 9,
+      "extractedRows": 9,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Iron Studies": {
+      "expectedRows": 9,
+      "extractedRows": 9,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Kidney Function Test": {
+      "expectedRows": 4,
+      "extractedRows": 4,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Lipid Profile": {
+      "expectedRows": 9,
+      "extractedRows": 9,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Liver Function Test": {
+      "expectedRows": 19,
+      "extractedRows": 19,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "UNSPECIFIED": {
+      "expectedRows": 1,
+      "extractedRows": 1,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Renal Function Test": {
+      "expectedRows": 8,
+      "extractedRows": 8,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Serology": {
+      "expectedRows": 9,
+      "extractedRows": 9,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Thyroid Profile": {
+      "expectedRows": 9,
+      "extractedRows": 9,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Urine Examination": {
+      "expectedRows": 14,
+      "extractedRows": 14,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 92.86,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    },
+    "Vitamin Profile": {
+      "expectedRows": 1,
+      "extractedRows": 1,
+      "nameAccuracy": 100.0,
+      "numericAccuracy": 100.0,
+      "unitAccuracy": 100.0,
+      "rangeAccuracy": 100.0,
+      "rowAssociation": 100.0,
+      "falsePositives": 0,
+      "missedRows": 0
+    }
+  },
+  "panelCoverage": [
+    "Coagulation",
+    "Complete Blood Count",
+    "Diabetes Profile",
+    "Electrolytes",
+    "Inflammation",
+    "Iron Studies",
+    "Kidney Function Test",
+    "Lipid Profile",
+    "Liver Function Test",
+    "Renal Function Test",
+    "Serology",
+    "Thyroid Profile",
+    "Urine Examination",
+    "Vitamin Profile"
+  ],
+  "totalExpectedRows": 133,
+  "totalExtractedRows": 133,
+  "metrics": {
+    "documentTypeAccuracy": 100.0,
+    "testNameAccuracy": 100.0,
+    "numericValueAccuracy": 99.14,
+    "textValueAccuracy": 100.0,
+    "unitAccuracy": 100.0,
+    "referenceRangeAccuracy": 98.5,
+    "printedFlagAccuracy": 100.0,
+    "sectionAccuracy": 100.0,
+    "rowAssociationAccuracy": 100.0,
+    "pageAccuracy": 100.0,
+    "methodAccuracy": 100.0,
+    "reviewRecall": 100.0,
+    "reviewPrecision": 9.09,
+    "falseReviewRate": 7.58,
+    "safeFailureRate": 100.0
+  },
+  "false_review_analysis": {
+    "countsByIssueCode": {
+      "LOW_REFERENCE_CONFIDENCE": 4,
+      "NORMALIZATION_AMBIGUOUS": 2,
+      "LOW_NAME_CONFIDENCE": 3,
+      "LOW_VALUE_CONFIDENCE": 2
+    },
+    "records": [
+      {
+        "documentId": "demographic-range",
+        "testName": "Hemoglobin",
+        "issueCode": "LOW_REFERENCE_CONFIDENCE",
+        "field": "ReferenceText",
+        "confidence": 0.55,
+        "rule": "Reference range confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "demographic-range",
+        "testName": "Hemoglobin",
+        "issueCode": "NORMALIZATION_AMBIGUOUS",
+        "field": "NormalizedName",
+        "confidence": 0.55,
+        "rule": "source row association is ambiguous",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "expanded-panel-09",
+        "testName": "Bacteria",
+        "issueCode": "LOW_NAME_CONFIDENCE",
+        "field": "OriginalName",
+        "confidence": 0.7,
+        "rule": "Test-name confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "real-ocr-lft",
+        "testName": "AST",
+        "issueCode": "LOW_VALUE_CONFIDENCE",
+        "field": "ValueNumeric",
+        "confidence": 0.36,
+        "rule": "Numeric or textual result confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "real-ocr-lft",
+        "testName": "AST",
+        "issueCode": "LOW_REFERENCE_CONFIDENCE",
+        "field": "ReferenceText",
+        "confidence": 0.36,
+        "rule": "Reference range confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "real-ocr-lft",
+        "testName": "AST",
+        "issueCode": "LOW_NAME_CONFIDENCE",
+        "field": "OriginalName",
+        "confidence": 0.36,
+        "rule": "Test-name confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "real-ocr-hba1c",
+        "testName": "HbA1c",
+        "issueCode": "LOW_VALUE_CONFIDENCE",
+        "field": "ValueNumeric",
+        "confidence": 0.47,
+        "rule": "Numeric or textual result confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "real-ocr-hba1c",
+        "testName": "HbA1c",
+        "issueCode": "LOW_REFERENCE_CONFIDENCE",
+        "field": "ReferenceText",
+        "confidence": 0.47,
+        "rule": "Reference range confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "real-ocr-hba1c",
+        "testName": "HbA1c",
+        "issueCode": "LOW_NAME_CONFIDENCE",
+        "field": "OriginalName",
+        "confidence": 0.47,
+        "rule": "Test-name confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "advanced-layout-multipage",
+        "testName": "White Blood Cell Count",
+        "issueCode": "LOW_REFERENCE_CONFIDENCE",
+        "field": "ReferenceText",
+        "confidence": 0.55,
+        "rule": "Reference range confidence is below the review threshold.",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      },
+      {
+        "documentId": "advanced-layout-multipage",
+        "testName": "White Blood Cell Count",
+        "issueCode": "NORMALIZATION_AMBIGUOUS",
+        "field": "NormalizedName",
+        "confidence": 0.55,
+        "rule": "source row association is ambiguous",
+        "expectedReviewState": "AUTO_ACCEPTED",
+        "actualReviewState": "REVIEW_REQUIRED"
+      }
+    ]
+  },
+  "remaining_mismatches": [
+    {
+      "documentId": "low-quality-ocr",
+      "page": 1,
+      "expectedField": "numeric",
+      "expectedValue": 10.8,
+      "actualValue": 108.0,
+      "reviewState": "REVIEW_REQUIRED",
+      "confidence": 0.88,
+      "errorCategory": "NUMERIC_MISMATCH",
+      "severity": "C"
+    },
+    {
+      "documentId": "expanded-panel-09",
+      "page": 1,
+      "expectedField": "reference",
+      "expectedValue": "Absent",
+      "actualValue": "Absen",
+      "reviewState": "REVIEW_REQUIRED",
+      "confidence": 0.7,
+      "errorCategory": "REFERENCE_MISMATCH",
+      "severity": "C"
+    },
+    {
+      "documentId": "advanced-layout-multipage",
+      "page": 1,
+      "expectedField": "reference",
+      "expectedValue": "4.0 - 11.0",
+      "actualValue": "4.0 - 11.0 Platelet count 220 K/uL 150 - 450 Sample hemolysed",
+      "reviewState": "REVIEW_REQUIRED",
+      "confidence": 0.55,
+      "errorCategory": "REFERENCE_MISMATCH",
+      "severity": "C"
+    }
+  ],
+  "safety_metrics": {
+    "unsafeAcceptedErrors": 0,
+    "unsafeAcceptedNumericErrors": 0,
+    "unsafeAcceptedAssociationErrors": 0,
+    "unsafeAcceptedUnitRangeErrors": 0,
+    "internalTarget": 0,
+    "safeFailureRate": 100.0
+  },
+  "safety": {
+    "unsafeAcceptedErrors": 0,
+    "unsafeAcceptedNumericErrors": 0,
+    "unsafeAcceptedAssociationErrors": 0,
+    "unsafeAcceptedUnitRangeErrors": 0,
+    "internalTarget": 0,
+    "safeFailureRate": 100.0
+  },
+  "tesseractVersion": "5.4.0.20240606",
+  "counts": {
+    "expected": 133,
+    "extracted": 133,
+    "falsePositives": 0,
+    "missedRows": 0,
+    "wrongAssociations": 0,
+    "unsafeAcceptedErrors": 0,
+    "reviewTruePositive": 1,
+    "reviewFalseNegative": 0,
+    "reviewFalsePositive": 10,
+    "trueNegative": 122
+  },
+  "severityCounts": {
+    "A": 0,
+    "B": 0,
+    "C": 3,
+    "D": 0,
+    "E": 0
+  },
+  "errors": [
+    {
+      "documentId": "low-quality-ocr",
+      "page": 1,
+      "expectedField": "numeric",
+      "expectedValue": 10.8,
+      "actualValue": 108.0,
+      "reviewState": "REVIEW_REQUIRED",
+      "confidence": 0.88,
+      "errorCategory": "NUMERIC_MISMATCH",
+      "severity": "C"
+    },
+    {
+      "documentId": "expanded-panel-09",
+      "page": 1,
+      "expectedField": "reference",
+      "expectedValue": "Absent",
+      "actualValue": "Absen",
+      "reviewState": "REVIEW_REQUIRED",
+      "confidence": 0.7,
+      "errorCategory": "REFERENCE_MISMATCH",
+      "severity": "C"
+    },
+    {
+      "documentId": "advanced-layout-multipage",
+      "page": 1,
+      "expectedField": "reference",
+      "expectedValue": "4.0 - 11.0",
+      "actualValue": "4.0 - 11.0 Platelet count 220 K/uL 150 - 450 Sample hemolysed",
+      "reviewState": "REVIEW_REQUIRED",
+      "confidence": 0.55,
+      "errorCategory": "REFERENCE_MISMATCH",
+      "severity": "C"
+    }
+  ]
+}
