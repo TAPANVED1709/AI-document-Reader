@@ -18,6 +18,7 @@ from parsers.base import LabResultItem
 from parsers.lab_parser import LabRowParser
 from validation import ValidationEngine, load_config
 from explanations import ExplanationRequest, ExplanationResponse, provider_from_config, PROMPT_VERSION
+from trends import TrendRequest, build_trend, summarize_trend
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +107,12 @@ async def explain_structured(request: ExplanationRequest):
         try: return await fallback.generate(request)
         except Exception: pass
     return await __import__("explanations.provider", fromlist=["DeterministicFallbackProvider"]).DeterministicFallbackProvider().generate(request)
+
+@app.post("/trends/compare")
+async def compare_trend(request: TrendRequest):
+    trend = build_trend(request)
+    trend["summary"] = summarize_trend(trend)
+    return trend
 
 @app.post("/analyse", response_model=AnalysisResponse)
 async def analyse_document(file: UploadFile = File(...)):

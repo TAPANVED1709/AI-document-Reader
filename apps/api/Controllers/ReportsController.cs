@@ -312,6 +312,8 @@ public class ReportsController : ControllerBase
             pageSources = System.Text.Json.JsonSerializer.Deserialize<List<AiPageSourceDto>>(report.PageSourcesJson ?? "null"),
             uploadedAt = report.UploadedAt,
             analysedAt = report.AnalysedAt,
+            reportDate = report.ReportDate ?? report.UploadedAt,
+            reportDateSource = report.ReportDateSource,
             resultsCount = results.Count,
             validationSummary = new { totalResults = results.Count, autoAccepted = results.Count(r => !r.ReviewRequired), reviewRequired = results.Count(r => r.ReviewRequired), verified = results.Count(r => r.IsVerified), corrected = results.Count(r => r.CorrectedAt.HasValue) },
             results = results.Select(r => MapResultToDto(r, report)).ToList()

@@ -1,4 +1,5 @@
 export type ExplanationResponse = { summary: string; validatedFindings: { test?: string; explanation?: string }[]; requiresVerification: { test?: string; reason?: string }[]; disclaimer: string; provider: string; model: string; promptVersion: string; usedFallback?: boolean; };
+export type TrendResponse = { test: string; unit?: string; points: { reportId: string; date?: string; value?: number; valueText: string; status: Status; reviewState: string; included?: boolean; exclusionReason?: string }[]; requiresVerificationTrendPoints: { reportId: string; valueText: string; exclusionReason?: string }[]; firstValue?: number; latestValue?: number; absoluteChange?: number; percentagePointChange?: number; direction: 'INCREASED' | 'DECREASED' | 'UNCHANGED' | 'INSUFFICIENT_DATA'; validationIssues: string[]; summary?: string; };
 
 export type Status = 'NORMAL' | 'LOW' | 'HIGH' | 'UNKNOWN';
 export type Filter = 'All' | Status | 'Needs Review' | 'Verified';
@@ -45,5 +46,7 @@ export type Report = {
   pageSources?: { page: number; source: string }[];
   results: LabResult[];
   resultsCount: number;
+  reportDate?: string;
+  reportDateSource?: 'REPORT_DATE' | 'COLLECTION_DATE' | 'UPLOAD_DATE' | 'UNKNOWN';
   validationSummary?: { totalResults: number; autoAccepted: number; reviewRequired: number; verified: number; corrected: number; };
 };

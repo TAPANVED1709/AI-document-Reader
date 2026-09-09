@@ -16,6 +16,7 @@ public static class Stage2SchemaUpgrade
             ["OcrApplied"] = "INTEGER NOT NULL DEFAULT 0",
             ["ProcessingMode"] = "TEXT NOT NULL DEFAULT 'UNKNOWN'",
             ["PageSourcesJson"] = "TEXT NULL"
+            , ["ReportDate"] = "TEXT NULL", ["ReportDateSource"] = "TEXT NOT NULL DEFAULT 'UPLOAD_DATE'"
         };
         var correctionColumns = new Dictionary<string, string>
         {

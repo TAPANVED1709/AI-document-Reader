@@ -10,6 +10,8 @@ public class MedicalReport
     public ReportStatus Status { get; set; } = ReportStatus.Uploaded;
     public DateTimeOffset UploadedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? AnalysedAt { get; set; }
+    public DateTimeOffset? ReportDate { get; set; }
+    public string ReportDateSource { get; set; } = "UPLOAD_DATE";
 
     public bool OcrRequired { get; set; }
     public bool OcrApplied { get; set; }
