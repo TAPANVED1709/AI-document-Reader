@@ -50,3 +50,6 @@ export type Report = {
   reportDateSource?: 'REPORT_DATE' | 'COLLECTION_DATE' | 'UPLOAD_DATE' | 'UNKNOWN';
   validationSummary?: { totalResults: number; autoAccepted: number; reviewRequired: number; verified: number; corrected: number; };
 };
+
+export type TimelineEvent = { eventId: string; reportId: string; date?: string; dateSource: string; title: string; reportType: string; sections: string[]; resultCount: number; reviewRequiredCount: number; verifiedCount: number; correctedCount: number; highCount: number; lowCount: number; normalCount: number; unknownCount: number; };
+export type TimelineResult = { id: string; reportId: string; test: string; value?: number; valueText: string; unit?: string; date?: string; dateSource: string; status: Status; reviewState: string; included: boolean; confidence: number; section?: string; };
