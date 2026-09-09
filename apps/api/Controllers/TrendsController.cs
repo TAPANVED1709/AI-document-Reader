@@ -2,15 +2,19 @@ using AI.DocumentReader.Api.Domain;
 using AI.DocumentReader.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using AI.DocumentReader.Api.Services;
 
 namespace AI.DocumentReader.Api.Controllers;
 
-[ApiController]
+[ApiController, Authorize]
 [Route("api/trends")]
 public class TrendsController : ControllerBase
 {
     private readonly DocumentDbContext _db;
-    public TrendsController(DocumentDbContext db) => _db = db;
+    private readonly IMedicalResourceAuthorizationService _authorization;
+    public TrendsController(DocumentDbContext db, IMedicalResourceAuthorizationService authorization) { _db = db; _authorization = authorization; }
 
     public record CompareRequest(List<Guid> ReportIds, string? TestName = null, DateTimeOffset? FromDate = null, DateTimeOffset? ToDate = null);
 
@@ -23,7 +27,10 @@ public class TrendsController : ControllerBase
     [HttpPost("compare")]
     public async Task<IActionResult> Compare([FromBody] CompareRequest request, CancellationToken ct)
     {
-        var query = _db.LabResults.AsNoTracking().Include(r => r.MedicalReport).AsQueryable();
+        var userId = Guid.TryParse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier), out var uid) ? uid : Guid.Empty;
+        var organizationId = Guid.TryParse(User.FindFirstValue("organization_id"), out var oid) ? oid : Guid.Empty;
+        var allowedReportIds = await _db.MedicalReports.AsNoTracking().Where(r => r.UploadedByUserId == userId || r.PatientUserId == userId || (r.OrganizationId == organizationId && organizationId != Guid.Empty)).Select(r => r.Id).ToListAsync(ct);
+        var query = _db.LabResults.AsNoTracking().Include(r => r.MedicalReport).Where(r => allowedReportIds.Contains(r.MedicalReportId)).AsQueryable();
         if (request.ReportIds.Count > 0) query = query.Where(r => request.ReportIds.Contains(r.MedicalReportId));
         var all = await query.ToListAsync(ct);
         var selected = all.Where(r => string.IsNullOrWhiteSpace(request.TestName) || Canonical(r.CorrectedTestName ?? r.NormalizedTestName ?? r.OriginalTestName) == Canonical(request.TestName!)).Where(r => DateInRange(r.MedicalReport?.ReportDate ?? r.MedicalReport?.UploadedAt, request)).ToList();

@@ -1,7 +1,13 @@
 using System.Text.Json.Serialization;
 using AI.DocumentReader.Api.Infrastructure;
 using AI.DocumentReader.Api.Services;
+using AI.DocumentReader.Api.Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Antiforgery;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +18,19 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
+builder.Services.AddAuthentication("AppCookie").AddCookie("AppCookie", options =>
+{
+    options.Cookie.Name = "ai_document_reader_session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.ExpireTimeSpan = TimeSpan.FromHours(8);
+    options.SlidingExpiration = true;
+    options.Events.OnRedirectToLogin = context => { context.Response.StatusCode = StatusCodes.Status401Unauthorized; return Task.CompletedTask; };
+});
+builder.Services.AddAuthorization();
+builder.Services.AddAntiforgery(options => { options.HeaderName = "X-XSRF-TOKEN"; options.Cookie.Name = "ai_document_reader_csrf"; options.Cookie.HttpOnly = false; options.Cookie.SameSite = SameSiteMode.Lax; });
+builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
 // 2. Configure Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -46,6 +65,17 @@ builder.Services.AddDbContext<DocumentDbContext>(options =>
 // 4. Register Application Services
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IReferenceRangeClassifier, ReferenceRangeClassifier>();
+builder.Services.AddScoped<IMedicalResourceAuthorizationService, MedicalResourceAuthorizationService>();
+builder.Services.AddScoped<ISecurityAuditService, SecurityAuditService>();
+builder.Services.AddRateLimiter(options =>
+{
+    var authLimit = builder.Configuration.GetValue("Security:AuthRequestsPerMinute", 10);
+    var uploadLimit = builder.Configuration.GetValue("Security:UploadRequestsPerMinute", 30);
+    var explanationLimit = builder.Configuration.GetValue("Security:ExplanationRequestsPerMinute", 20);
+    options.AddFixedWindowLimiter("auth", o => { o.PermitLimit = authLimit; o.Window = TimeSpan.FromMinutes(1); o.QueueLimit = 0; });
+    options.AddFixedWindowLimiter("upload", o => { o.PermitLimit = uploadLimit; o.Window = TimeSpan.FromMinutes(1); o.QueueLimit = 0; });
+    options.AddFixedWindowLimiter("explanation", o => { o.PermitLimit = explanationLimit; o.Window = TimeSpan.FromMinutes(1); o.QueueLimit = 0; });
+});
 
 var aiServiceUrl = builder.Configuration["AiService:BaseUrl"] ?? "http://localhost:8000";
 builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>(client =>
@@ -57,12 +87,7 @@ builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>(client =>
 // 5. Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
+    options.AddPolicy("LocalFrontend", policy => policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:3000", "http://127.0.0.1:3000"]).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 });
 
 var app = builder.Build();
@@ -96,7 +121,22 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors("AllowAll");
+app.Use(async (context, next) => { context.Response.Headers["X-Content-Type-Options"] = "nosniff"; context.Response.Headers["Referrer-Policy"] = "no-referrer"; context.Response.Headers["X-Frame-Options"] = "DENY"; context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://localhost:3000 http://127.0.0.1:3000 http://localhost:5000 http://127.0.0.1:5000; frame-src 'self' http://localhost:5000 http://127.0.0.1:5000; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"; await next(); });
+app.UseRouting();
+app.UseCors("LocalFrontend");
+app.UseRateLimiter();
+app.UseAuthentication();
+if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); app.UseHsts(); }
+app.Use(async (context, next) =>
+{
+    if (HttpMethods.IsPost(context.Request.Method) || HttpMethods.IsPut(context.Request.Method) || HttpMethods.IsPatch(context.Request.Method) || HttpMethods.IsDelete(context.Request.Method))
+    {
+        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+        try { await antiforgery.ValidateRequestAsync(context); }
+        catch (AntiforgeryValidationException) { context.Response.StatusCode = StatusCodes.Status400BadRequest; await context.Response.WriteAsJsonAsync(new { error = "A valid CSRF token is required." }); return; }
+    }
+    await next();
+});
 
 app.UseAuthorization();
 

@@ -16,6 +16,9 @@ public class MedicalReport
     public decimal DocumentTypeConfidence { get; set; }
     public string? DocumentTypeSignalsJson { get; set; }
     public string? StructuredDataJson { get; set; }
+    public Guid? PatientUserId { get; set; }
+    public Guid? OrganizationId { get; set; }
+    public Guid? UploadedByUserId { get; set; }
 
     public bool OcrRequired { get; set; }
     public bool OcrApplied { get; set; }

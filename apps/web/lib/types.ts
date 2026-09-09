@@ -57,3 +57,4 @@ export type Report = {
 
 export type TimelineEvent = { eventId: string; reportId: string; date?: string; dateSource: string; title: string; reportType: string; documentType?: string; sections: string[]; resultCount: number; reviewRequiredCount: number; verifiedCount: number; correctedCount: number; highCount: number; lowCount: number; normalCount: number; unknownCount: number; };
 export type TimelineResult = { id: string; reportId: string; test: string; value?: number; valueText: string; unit?: string; date?: string; dateSource: string; status: Status; reviewState: string; included: boolean; confidence: number; section?: string; };
+export type CurrentUser = { id: string; email: string; firstName: string; lastName: string; role: 'PATIENT' | 'LAB_STAFF' | 'PATHOLOGIST' | 'ADMIN'; organizationId?: string };

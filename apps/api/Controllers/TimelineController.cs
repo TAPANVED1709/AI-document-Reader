@@ -2,20 +2,26 @@ using AI.DocumentReader.Api.Domain;
 using AI.DocumentReader.Api.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using AI.DocumentReader.Api.Services;
 
 namespace AI.DocumentReader.Api.Controllers;
 
-[ApiController]
+[ApiController, Authorize]
 [Route("api/timeline")]
 public class TimelineController : ControllerBase
 {
     private readonly DocumentDbContext _db;
-    public TimelineController(DocumentDbContext db) => _db = db;
+    private readonly IMedicalResourceAuthorizationService _authorization;
+    public TimelineController(DocumentDbContext db, IMedicalResourceAuthorizationService authorization) { _db = db; _authorization = authorization; }
 
     [HttpGet]
     public async Task<IActionResult> Timeline(int? year, int? month, string? section, string? testName, string? reviewState, CancellationToken ct)
     {
-        var reports = await _db.MedicalReports.AsNoTracking().Include(r => r.LabResults).Where(r => (!year.HasValue || (r.ReportDate ?? r.UploadedAt).Year == year) && (!month.HasValue || (r.ReportDate ?? r.UploadedAt).Month == month)).ToListAsync(ct);
+        var userId = Guid.TryParse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier), out var uid) ? uid : Guid.Empty;
+        var organizationId = Guid.TryParse(User.FindFirstValue("organization_id"), out var oid) ? oid : Guid.Empty;
+        var reports = await _db.MedicalReports.AsNoTracking().Include(r => r.LabResults).Where(r => (r.UploadedByUserId == userId || r.PatientUserId == userId || r.OrganizationId == organizationId && organizationId != Guid.Empty) && (!year.HasValue || (r.ReportDate ?? r.UploadedAt).Year == year) && (!month.HasValue || (r.ReportDate ?? r.UploadedAt).Month == month)).ToListAsync(ct);
         var events = reports.Where(r => section is null && testName is null && reviewState is null || r.LabResults.Any(x => Matches(x, section, testName, reviewState))).Select(r => new { Report = r, Date = r.ReportDate ?? r.UploadedAt }).OrderByDescending(x => x.Date).Select(x => Event(x.Report, section, testName, reviewState)).ToList();
         return Ok(events);
     }
@@ -23,6 +29,7 @@ public class TimelineController : ControllerBase
     [HttpGet("{reportId:guid}")]
     public async Task<IActionResult> Detail(Guid reportId, CancellationToken ct)
     {
+        if (!await _authorization.CanViewReportAsync(User, reportId, ct)) return NotFound(new { error = "Report was not found." });
         var report = await _db.MedicalReports.AsNoTracking().Include(r => r.LabResults).ThenInclude(r => r.ValidationIssues).FirstOrDefaultAsync(r => r.Id == reportId, ct);
         return report is null ? NotFound(new { error = "Report was not found." }) : Ok(new { report = Event(report, null, null, null), results = report.LabResults.OrderBy(r => r.PageNumber).Select(Result) });
     }

@@ -15,10 +15,23 @@ public class DocumentDbContext : DbContext
     public DbSet<ResultCorrectionAudit> ResultCorrectionAudits => Set<ResultCorrectionAudit>();
     public DbSet<ValidationIssue> ValidationIssues => Set<ValidationIssue>();
     public DbSet<ExplanationRecord> ExplanationRecords => Set<ExplanationRecord>();
+    public DbSet<ApplicationUser> ApplicationUsers => Set<ApplicationUser>();
+    public DbSet<PatientProfile> PatientProfiles => Set<PatientProfile>();
+    public DbSet<Organization> Organizations => Set<Organization>();
+    public DbSet<SecurityAuditEvent> SecurityAuditEvents => Set<SecurityAuditEvent>();
+    public DbSet<PatientAccessGrant> PatientAccessGrants => Set<PatientAccessGrant>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<ApplicationUser>().HasKey(x => x.Id);
+        modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.Email).IsUnique();
+        modelBuilder.Entity<PatientProfile>().HasKey(x => x.Id);
+        modelBuilder.Entity<Organization>().HasKey(x => x.Id);
+        modelBuilder.Entity<SecurityAuditEvent>().HasKey(x => x.Id);
+        modelBuilder.Entity<PatientAccessGrant>().HasKey(x => x.Id);
+        modelBuilder.Entity<PatientAccessGrant>().HasIndex(x => new { x.PatientId, x.GrantedToUserId, x.GrantedToOrganizationId });
 
         // MedicalReport
         modelBuilder.Entity<MedicalReport>(entity =>

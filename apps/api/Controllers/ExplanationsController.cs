@@ -4,33 +4,42 @@ using AI.DocumentReader.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AI.DocumentReader.Api.Controllers;
 
-[ApiController]
+[ApiController, Authorize]
 [Route("api")]
 public class ExplanationsController : ControllerBase
 {
     private readonly DocumentDbContext _db;
     private readonly IAiServiceClient _ai;
-    public ExplanationsController(DocumentDbContext db, IAiServiceClient ai) { _db = db; _ai = ai; }
+    private readonly IMedicalResourceAuthorizationService _authorization;
+    private readonly ISecurityAuditService? _audit;
+    public ExplanationsController(DocumentDbContext db, IAiServiceClient ai, IMedicalResourceAuthorizationService authorization, ISecurityAuditService? audit = null) { _db = db; _ai = ai; _authorization = authorization; _audit = audit; }
 
     [HttpGet("local-ai/health")]
     public async Task<IActionResult> Health(CancellationToken cancellationToken) => Ok(await _ai.LocalHealthAsync(cancellationToken));
 
     [HttpPost("reports/{reportId:guid}/explanations/patient")]
+    [EnableRateLimiting("explanation")]
     public Task<IActionResult> Patient(Guid reportId, CancellationToken cancellationToken) => Generate(reportId, "PATIENT_SIMPLE", null, cancellationToken);
 
     [HttpPost("reports/{reportId:guid}/explanations/overview")]
+    [EnableRateLimiting("explanation")]
     public Task<IActionResult> Overview(Guid reportId, CancellationToken cancellationToken) => Generate(reportId, "REPORT_OVERVIEW", null, cancellationToken);
     [HttpPost("reports/{reportId:guid}/explanations/clinician")]
+    [EnableRateLimiting("explanation")]
     public Task<IActionResult> Clinician(Guid reportId, CancellationToken cancellationToken) => Generate(reportId, "CLINICIAN_SUMMARY", null, cancellationToken);
 
     [HttpPost("reports/{reportId:guid}/results/{resultId:guid}/explain")]
+    [EnableRateLimiting("explanation")]
     public Task<IActionResult> Result(Guid reportId, Guid resultId, CancellationToken cancellationToken) => Generate(reportId, "RESULT_EXPLANATION", resultId, cancellationToken);
 
     private async Task<IActionResult> Generate(Guid reportId, string mode, Guid? resultId, CancellationToken cancellationToken)
     {
+        if (!await _authorization.CanViewReportAsync(User, reportId, cancellationToken)) { if (_audit is not null) await _audit.RecordAsync(User, "ACCESS_DENIED", false, "MedicalReport", reportId, cancellationToken); return NotFound(new { error = "Report was not found." }); }
         var report = await _db.MedicalReports.Include(r => r.LabResults).ThenInclude(r => r.ValidationIssues).FirstOrDefaultAsync(r => r.Id == reportId, cancellationToken);
         if (report is null) return NotFound(new { error = "Report was not found." });
         var selected = resultId.HasValue ? report.LabResults.Where(r => r.Id == resultId).ToList() : report.LabResults.ToList();
@@ -40,6 +49,7 @@ public class ExplanationsController : ControllerBase
         var record = new ExplanationRecord { MedicalReportId = reportId, LabResultId = resultId, Mode = mode, Provider = response.Provider, Model = response.Model, PromptVersion = response.PromptVersion, GeneratedText = response.Summary, GeneratedJson = JsonSerializer.Serialize(response), CreatedAt = DateTimeOffset.UtcNow };
         _db.ExplanationRecords.Add(record);
         await _db.SaveChangesAsync(cancellationToken);
+        if (_audit is not null) await _audit.RecordAsync(User, "EXPLANATION_GENERATE", true, "MedicalReport", reportId, cancellationToken);
         return Ok(response);
     }
 

@@ -4,10 +4,13 @@ using AI.DocumentReader.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace AI.DocumentReader.Api.Controllers;
 
-[ApiController]
+[ApiController, Authorize]
 [Route("api/[controller]")]
 public class ReportsController : ControllerBase
 {
@@ -27,25 +30,33 @@ public class ReportsController : ControllerBase
     private readonly IAiServiceClient _aiServiceClient;
     private readonly IReferenceRangeClassifier _rangeClassifier;
     private readonly ILogger<ReportsController> _logger;
+    private readonly IMedicalResourceAuthorizationService _authorization;
+    private readonly bool _enforceAuthorization;
+    private readonly ISecurityAuditService? _audit;
 
     public ReportsController(
         DocumentDbContext dbContext,
         ILocalStorageService storageService,
         IAiServiceClient aiServiceClient,
         IReferenceRangeClassifier rangeClassifier,
-        ILogger<ReportsController> logger)
+        ILogger<ReportsController> logger, IMedicalResourceAuthorizationService? authorization = null, ISecurityAuditService? audit = null)
     {
         _dbContext = dbContext;
         _storageService = storageService;
         _aiServiceClient = aiServiceClient;
         _rangeClassifier = rangeClassifier;
         _logger = logger;
+        _enforceAuthorization = authorization is not null;
+        _authorization = authorization ?? new MedicalResourceAuthorizationService(dbContext);
+        _audit = audit;
     }
 
     /// <summary>
     /// Uploads a PDF medical laboratory report and executes document intelligence analysis.
     /// </summary>
     [HttpPost("upload")]
+    [Authorize(Roles = "LAB_STAFF,PATHOLOGIST")]
+    [EnableRateLimiting("upload")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(20 * 1024 * 1024)] // 20 MB limit
     public async Task<IActionResult> UploadReport(IFormFile file, CancellationToken cancellationToken)
@@ -82,6 +93,8 @@ public class ReportsController : ControllerBase
             FileSize = file.Length,
             Status = ReportStatus.Processing,
             UploadedAt = DateTimeOffset.UtcNow
+            ,UploadedByUserId = Guid.TryParse((User ?? new ClaimsPrincipal()).FindFirstValue(ClaimTypes.NameIdentifier), out var uploader) ? uploader : null
+            ,OrganizationId = Guid.TryParse((User ?? new ClaimsPrincipal()).FindFirstValue("organization_id"), out var organization) ? organization : null
         };
 
         var analysisRun = new AnalysisRun
@@ -191,6 +204,7 @@ public class ReportsController : ControllerBase
         analysisRun.CompletedAt = DateTimeOffset.UtcNow;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+        await Audit("REPORT_UPLOAD", "MedicalReport", report.Id, true, cancellationToken);
 
         _logger.LogInformation("Report {ReportId} successfully analysed. {Count} tests saved.", report.Id, labResults.Count);
 
@@ -203,6 +217,7 @@ public class ReportsController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetReportById(Guid id, CancellationToken cancellationToken)
     {
+        if (_enforceAuthorization && !await _authorization.CanViewReportAsync(User, id, cancellationToken)) { await Audit("ACCESS_DENIED", "MedicalReport", id, false, cancellationToken); return NotFound(new { error = "Medical report was not found." }); }
         var report = await _dbContext.MedicalReports
             .Include(r => r.LabResults).ThenInclude(l => l.ValidationIssues)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
@@ -212,7 +227,7 @@ public class ReportsController : ControllerBase
             return NotFound(new { error = $"Medical report '{id}' was not found." });
         }
 
-        return Ok(MapToDto(report, report.LabResults.ToList()));
+        await Audit("REPORT_VIEW", "MedicalReport", id, true, cancellationToken); return Ok(MapToDto(report, report.LabResults.ToList()));
     }
 
     /// <summary>
@@ -221,6 +236,7 @@ public class ReportsController : ControllerBase
     [HttpGet("{id:guid}/results")]
     public async Task<IActionResult> GetReportResults(Guid id, CancellationToken cancellationToken)
     {
+        if (_enforceAuthorization && !await _authorization.CanViewReportAsync(User, id, cancellationToken)) { await Audit("ACCESS_DENIED", "MedicalReport", id, false, cancellationToken); return NotFound(new { error = "Medical report was not found." }); }
         var report = await _dbContext.MedicalReports.Include(r => r.LabResults).ThenInclude(l => l.ValidationIssues).FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
         if (report == null)
         {
@@ -234,24 +250,28 @@ public class ReportsController : ControllerBase
     [HttpGet("{id:guid}/file")]
     public IActionResult GetReportFile(Guid id)
     {
+        if (_enforceAuthorization && !_authorization.CanViewReportAsync(User, id).GetAwaiter().GetResult()) { Audit("ACCESS_DENIED", "PDF", id, false, default).GetAwaiter().GetResult(); return NotFound(new { error = "Report file was not found." }); }
         var report = _dbContext.MedicalReports.AsNoTracking().FirstOrDefault(r => r.Id == id);
         if (report == null || !_storageService.FileExists(report.StoredFileName)) return NotFound(new { error = "Report file was not found." });
-        return PhysicalFile(_storageService.GetReportAbsolutePath(report.StoredFileName), "application/pdf", report.OriginalFileName, enableRangeProcessing: true);
+        Audit("PDF_VIEW", "PDF", id, true, default).GetAwaiter().GetResult(); return PhysicalFile(_storageService.GetReportAbsolutePath(report.StoredFileName), "application/pdf", report.OriginalFileName, enableRangeProcessing: true);
     }
 
     [HttpPost("{reportId:guid}/results/{resultId:guid}/verify")]
     public async Task<IActionResult> VerifyResult(Guid reportId, Guid resultId, CancellationToken cancellationToken)
     {
+        if (_enforceAuthorization && !await _authorization.CanModifyReportAsync(User, reportId, cancellationToken)) { await Audit("ACCESS_DENIED", "LabResult", resultId, false, cancellationToken); return NotFound(new { error = "Result was not found." }); }
         var result = await _dbContext.LabResults.FirstOrDefaultAsync(r => r.Id == resultId && r.MedicalReportId == reportId, cancellationToken);
         if (result == null) return NotFound(new { error = "Result was not found." });
         result.IsVerified = true;
         await _dbContext.SaveChangesAsync(cancellationToken);
+        await Audit("RESULT_VERIFY", "LabResult", resultId, true, cancellationToken);
         return Ok(new { isVerified = true });
     }
 
     [HttpPatch("{reportId:guid}/results/{resultId:guid}")]
     public async Task<IActionResult> CorrectResult(Guid reportId, Guid resultId, [FromBody] ResultCorrectionRequest request, CancellationToken cancellationToken)
     {
+        if (_enforceAuthorization && !await _authorization.CanModifyReportAsync(User, reportId, cancellationToken)) { await Audit("ACCESS_DENIED", "LabResult", resultId, false, cancellationToken); return NotFound(new { error = "Result was not found." }); }
         if (request.ReferenceMin.HasValue && request.ReferenceMax.HasValue && request.ReferenceMin > request.ReferenceMax)
             return BadRequest(new { error = "Reference minimum cannot exceed reference maximum." });
         if (request.TestName is null && request.Value is null && request.ValueText is null && request.Unit is null &&
@@ -288,17 +308,21 @@ public class ReportsController : ControllerBase
         result.CalculatedStatus = _rangeClassifier.Classify(value, min, max, result.ReferenceType);
         _dbContext.ResultCorrectionAudits.AddRange(audit);
         await _dbContext.SaveChangesAsync(cancellationToken);
+        await Audit("RESULT_CORRECT", "LabResult", resultId, true, cancellationToken);
         return Ok(MapResultToDto(result, report));
     }
 
     [HttpGet("{reportId:guid}/results/{resultId:guid}/audit")]
     public async Task<IActionResult> GetCorrectionAudit(Guid reportId, Guid resultId, CancellationToken cancellationToken)
     {
+        if (_enforceAuthorization && !await _authorization.CanViewReportAsync(User, reportId, cancellationToken)) { await Audit("ACCESS_DENIED", "LabResult", resultId, false, cancellationToken); return NotFound(new { error = "Result was not found." }); }
         var exists = await _dbContext.LabResults.AnyAsync(r => r.Id == resultId && r.MedicalReportId == reportId, cancellationToken);
         if (!exists) return NotFound(new { error = "Result was not found." });
         var entries = await _dbContext.ResultCorrectionAudits.AsNoTracking().Where(a => a.LabResultId == resultId).OrderBy(a => a.ChangedAt).ToListAsync(cancellationToken);
         return Ok(entries);
     }
+
+    private Task Audit(string action, string resourceType, Guid? resourceId, bool success, CancellationToken ct) => _audit is null ? Task.CompletedTask : _audit.RecordAsync(User, action, success, resourceType, resourceId, ct);
 
     private static object MapToDto(MedicalReport report, List<LabResult> results)
     {
