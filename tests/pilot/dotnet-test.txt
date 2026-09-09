@@ -1,0 +1,8 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  AI.DocumentReader.Api -> C:\Users\tapan\OneDrive\Desktop\Projects\AI-document-Reader\apps\api\bin\Debug\net8.0\AI.DocumentReader.Api.dll
+  AI.DocumentReader.Tests -> C:\Users\tapan\OneDrive\Desktop\Projects\AI-document-Reader\tests\api\bin\Debug\net8.0\AI.DocumentReader.Tests.dll
+Test run for C:\Users\tapan\OneDrive\Desktop\Projects\AI-document-Reader\tests\api\bin\Debug\net8.0\AI.DocumentReader.Tests.dll (.NETCoreApp,Version=v8.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    57, Skipped:     0, Total:    57, Duration: 55 s - AI.DocumentReader.Tests.dll (net8.0)

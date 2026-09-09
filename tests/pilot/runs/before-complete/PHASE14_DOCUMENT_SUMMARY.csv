@@ -1,0 +1,31 @@
+documentId,title,format,tags,expectedRows,extractedRows,classificationCorrect,processingMode,verdict,falsePositives,missedRows,unsafeAcceptedErrors,wrongAssociations,fieldMismatches
+pilot-01,Single glucose / hexokinase,Native,"[""Native""]",1,2,True,NATIVE,FAIL,1,0,0,1,1
+pilot-02,Single scanned glucose,Scanned,"[""Scanned""]",1,2,True,OCR,FAIL,1,0,0,1,1
+pilot-03,CBC three-column table,Native,"[""Native"", ""Multi-column""]",12,13,True,NATIVE,FAIL,1,0,10,1,58
+pilot-04,Scanned CBC three-column table,Scanned,"[""Scanned"", ""Multi-column""]",12,13,True,OCR,FAIL,1,0,4,1,14
+pilot-05,Biochemistry continuation,Native,"[""Native"", ""Multi-page""]",18,21,True,NATIVE,FAIL,3,0,0,3,5
+pilot-06,Hybrid biochemistry continuation,Hybrid,"[""Hybrid"", ""Multi-page""]",18,21,True,HYBRID,FAIL,3,0,0,3,7
+pilot-07,Scanned biochemistry,Scanned,"[""Scanned"", ""Multi-page""]",16,18,True,OCR,FAIL,2,0,0,3,8
+pilot-08,Multi-section metabolic and coagulation,Native,"[""Native"", ""Multi-page""]",19,24,True,NATIVE,FAIL,5,0,4,9,9
+pilot-09,Wrapped names and ranges,Native,"[""Native"", ""Multi-page""]",20,24,True,NATIVE,FAIL,4,0,2,4,16
+pilot-10,Scanned wrapped rows,Scanned,"[""Scanned"", ""Multi-page""]",16,19,True,OCR,FAIL,3,0,1,3,25
+pilot-11,Parallel biochemical panels,Native,"[""Native"", ""Multi-column""]",16,17,True,NATIVE,FAIL,1,0,0,1,3
+pilot-12,Parallel hematology and lipid panels,Scanned,"[""Scanned"", ""Multi-column""]",16,0,False,NATIVE,FAIL,0,16,0,0,16
+pilot-13,Female printed intervals,Native,"[""Native""]",16,17,True,NATIVE,FAIL,1,0,0,1,1
+pilot-14,Male printed intervals,Scanned,"[""Scanned""]",16,16,True,OCR,FAIL,0,0,1,0,4
+pilot-15,Sex unknown printed intervals,Native,"[""Native""]",16,17,True,NATIVE,FAIL,1,0,0,1,1
+pilot-16,Conflicting sex metadata,Native,"[""Native""]",16,17,True,NATIVE,FAIL,1,0,1,1,7
+pilot-17,Child printed age intervals,Native,"[""Native""]",16,17,True,NATIVE,FAIL,1,0,0,1,3
+pilot-18,Infant printed month intervals,Hybrid,"[""Hybrid"", ""Multi-page""]",16,18,True,HYBRID,FAIL,2,0,0,2,9
+pilot-19,Age unknown printed intervals,Native,"[""Native""]",16,17,True,NATIVE,FAIL,1,0,0,1,1
+pilot-20,Qualitative urine and serology,Native,"[""Native""]",11,12,True,NATIVE,FAIL,1,0,2,1,3
+pilot-21,Scanned qualitative values,Scanned,"[""Scanned""]",11,12,True,OCR,FAIL,1,0,2,1,3
+pilot-22,Endocrine and nutrition,Native,"[""Native"", ""Multi-column""]",14,15,True,NATIVE,FAIL,1,0,12,1,68
+pilot-23,Hybrid endocrine and nutrition,Hybrid,"[""Hybrid"", ""Multi-page""]",14,17,True,HYBRID,FAIL,3,0,0,3,3
+pilot-24,Missing fields retained for review,Native,"[""Native""]",14,15,True,NATIVE,FAIL,1,0,0,1,1
+pilot-25,Comments and close distinct rows,Native,"[""Native""]",17,18,True,NATIVE,FAIL,1,0,0,1,1
+pilot-26,Repeated concepts with methods,Native,"[""Native"", ""Multi-page""]",15,17,True,NATIVE,FAIL,2,0,0,2,2
+pilot-27,Faint scanned decimals,Scanned,"[""Scanned"", ""Low-quality OCR""]",14,15,True,OCR,FAIL,1,0,0,2,26
+pilot-28,Low resolution scan and character corruption,Scanned,"[""Scanned"", ""Multi-page"", ""Low-quality OCR""]",24,26,True,OCR,FAIL,2,0,1,4,14
+pilot-29,Hybrid flags and unusual printed values,Hybrid,"[""Hybrid"", ""Multi-page""]",14,17,True,HYBRID,FAIL,3,0,0,3,7
+pilot-30,Scanned multipanel continuation,Scanned,"[""Scanned"", ""Multi-page""]",17,21,True,OCR,FAIL,4,0,3,7,23

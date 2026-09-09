@@ -1,0 +1,39 @@
+.................................................F...................... [ 51%]
+...................................................................      [100%]
+================================== FAILURES ===================================
+__________________ test_scanned_semantic_results_and_tokens ___________________
+
+    @requires_engine
+    def test_scanned_semantic_results_and_tokens():
+        pdf = make_pdf(['scan'])
+        native, required = PdfExtractor.extract_from_bytes(pdf)
+        assert required and native[0].text == ''
+        pages = LocalOcrEngine.ocr_from_bytes(pdf)
+        assert pages[0].tokens
+        assert all(t.text and 0 <= t.confidence <= 1 and t.width > 0 and t.height > 0 and t.page == 1 for t in pages[0].tokens)
+        body = analyse(['scan'])
+        assert (body['ocrRequired'], body['ocrApplied'], body['processingMode']) == (True, True, 'OCR')
+        for result in assert_results(body['results'], 1):
+            box = json.loads(result['boundingBoxJson'])
+            assert box['width'] > 0 and box['height'] > 0 and box['page'] == 1 and box['dpi'] == 300
+>           assert set(result['fieldConfidences']) == {'name', 'value', 'unit', 'ref'}
+E           AssertionError: assert {'association...nit', 'value'} == {'name', 'ref...nit', 'value'}
+E             
+E             Extra items in the left set:
+E             'association'
+E             Use -v to get more diff
+
+apps\ai-service\tests\test_stage2_hardening.py:58: AssertionError
+============================== warnings summary ===============================
+..\..\..\..\AppData\Local\Python\pythoncore-3.12-64\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\tapan\AppData\Local\Python\pythoncore-3.12-64\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+..\..\..\..\AppData\Local\Python\pythoncore-3.12-64\Lib\site-packages\starlette\testclient.py:53
+  C:\Users\tapan\AppData\Local\Python\pythoncore-3.12-64\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED apps/ai-service/tests/test_stage2_hardening.py::test_scanned_semantic_results_and_tokens
+1 failed, 138 passed, 2 warnings in 47.12s

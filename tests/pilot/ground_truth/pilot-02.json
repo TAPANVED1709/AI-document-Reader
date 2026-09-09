@@ -1,0 +1,52 @@
+{
+  "documentId": "pilot-02",
+  "title": "Single scanned glucose",
+  "format": "Scanned",
+  "layout": "list",
+  "tags": [
+    "Scanned"
+  ],
+  "features": [],
+  "metadata": "",
+  "expectedPages": 1,
+  "expectedDocumentType": "LAB_REPORT",
+  "expectedResults": [
+    {
+      "originalTestName": "Fasting Glucose",
+      "normalizedTestName": "Glucose",
+      "valueNumeric": "92",
+      "valueText": "92",
+      "valueOperator": null,
+      "originalUnit": "mg/dL",
+      "normalizedUnit": "mg/dL",
+      "unit": "mg/dL",
+      "referenceText": "70 - 99",
+      "referenceType": "BETWEEN",
+      "referenceMin": "70",
+      "referenceMax": "99",
+      "referenceOperator": null,
+      "reportedFlag": null,
+      "calculatedStatus": "NORMAL",
+      "sectionName": "Diabetes Profile",
+      "methodText": "Hexokinase",
+      "reviewRequired": false,
+      "reviewState": "AUTO_ACCEPTED",
+      "panel": "Diabetes",
+      "rowId": "pilot-02-r01",
+      "pageNumber": 1,
+      "sourceRegion": {
+        "x": 35,
+        "y": 122,
+        "width": 830,
+        "height": 19,
+        "coordinateSpace": "pdf_points"
+      }
+    }
+  ],
+  "expectedPageSources": [
+    "OCR"
+  ],
+  "expectedProcessingMode": "OCR",
+  "privacy": "Entirely synthetic; no patient name, DOB, address, accession or patient identifier. Age/sex are invented parsing inputs.",
+  "truthProvenance": "Manually specified generator catalog and printed layout; never application output. No truth corrections."
+}

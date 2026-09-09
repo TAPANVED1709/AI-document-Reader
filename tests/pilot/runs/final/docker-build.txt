@@ -1,0 +1,264 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.69kB done
+#1 DONE 0.0s
+
+#2 [ai-service internal] load build definition from Dockerfile
+#2 transferring dockerfile: 503B 0.0s done
+#2 DONE 0.1s
+
+#3 [web internal] load build definition from Dockerfile
+#3 transferring dockerfile: 554B 0.0s done
+#3 DONE 0.1s
+
+#4 [api internal] load build definition from Dockerfile
+#4 transferring dockerfile: 638B 0.0s done
+#4 DONE 0.1s
+
+#5 [api internal] load metadata for mcr.microsoft.com/dotnet/sdk:8.0
+#5 DONE 0.2s
+
+#6 [api internal] load metadata for mcr.microsoft.com/dotnet/aspnet:8.0
+#6 DONE 0.2s
+
+#7 [api internal] load .dockerignore
+#7 transferring context: 165B done
+#7 DONE 0.0s
+
+#8 [api internal] load build context
+#8 DONE 0.0s
+
+#9 [api runtime 1/4] FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:787c228ea85457bec43c8b084e6ac360b26ea43b5c2fcbe861f721f2e8670dd3
+#9 resolve mcr.microsoft.com/dotnet/aspnet:8.0@sha256:787c228ea85457bec43c8b084e6ac360b26ea43b5c2fcbe861f721f2e8670dd3 0.0s done
+#9 DONE 0.0s
+
+#10 [api build 1/6] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:bb32ba3ba3ea36e38572d9d8db76fa15f7cbf722f3f886e06bca6d528bd4fba8
+#10 resolve mcr.microsoft.com/dotnet/sdk:8.0@sha256:bb32ba3ba3ea36e38572d9d8db76fa15f7cbf722f3f886e06bca6d528bd4fba8 0.0s done
+#10 DONE 0.1s
+
+#8 [api internal] load build context
+#8 transferring context: 21.42kB 0.0s done
+#8 DONE 0.0s
+
+#11 [api build 2/6] WORKDIR /src
+#11 CACHED
+
+#12 [api build 3/6] COPY apps/api/AI.DocumentReader.Api.csproj apps/api/
+#12 CACHED
+
+#13 [api build 4/6] RUN dotnet restore apps/api/AI.DocumentReader.Api.csproj
+#13 CACHED
+
+#14 [api build 5/6] COPY apps/api apps/api
+#14 DONE 0.0s
+
+#15 [api build 6/6] RUN dotnet publish apps/api/AI.DocumentReader.Api.csproj -c Release -o /out --no-restore
+#15 ...
+
+#16 [ai-service internal] load metadata for docker.io/library/python:3.11-slim
+#16 DONE 1.6s
+
+#17 [ai-service internal] load .dockerignore
+#17 transferring context: 2B done
+#17 DONE 0.0s
+
+#18 [ai-service internal] load build context
+#18 transferring context: 44.34kB 0.1s done
+#18 DONE 0.1s
+
+#19 [ai-service 1/6] FROM docker.io/library/python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534
+#19 resolve docker.io/library/python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534 0.1s done
+#19 DONE 0.1s
+
+#20 [ai-service 4/6] COPY requirements.txt .
+#20 CACHED
+
+#21 [ai-service 2/6] WORKDIR /app
+#21 CACHED
+
+#22 [ai-service 3/6] RUN apt-get update && apt-get install -y --no-install-recommends     build-essential     tesseract-ocr     tesseract-ocr-eng     && rm -rf /var/lib/apt/lists/*
+#22 CACHED
+
+#23 [ai-service 5/6] RUN pip install --no-cache-dir -r requirements.txt
+#23 CACHED
+
+#24 [ai-service 6/6] COPY . .
+#24 DONE 0.1s
+
+#25 [web internal] load metadata for docker.io/library/node:22-alpine
+#25 DONE 3.0s
+
+#26 [ai-service] exporting to image
+#26 exporting layers 0.2s done
+#26 exporting manifest sha256:3490dac5c7d053325f70ed5f41476132c3043195c07c93dfce13ed249f4ab7a1 0.0s done
+#26 exporting config sha256:bd4cd8c423d53f77d4896b02d8660f774eba8371f49cc0b4946fac1db38bb689 0.0s done
+#26 exporting attestation manifest sha256:7dab82c76e55528316b582d94b8e23e0674bc33495a3057ae41fde42b5196351 0.0s done
+#26 exporting manifest list sha256:3c702d5544def0d5b238a2e0e9deafbb123e02db2fff5143ab3f1966288a83c8 0.0s done
+#26 naming to docker.io/library/phase14-36f18896-ai-service:latest done
+#26 unpacking to docker.io/library/phase14-36f18896-ai-service:latest 0.1s done
+#26 DONE 0.5s
+
+#27 [ai-service] resolving provenance for metadata file
+#27 DONE 0.2s
+
+#28 [web internal] load .dockerignore
+#28 transferring context: 74B 0.6s done
+#28 DONE 0.7s
+
+#15 [api build 6/6] RUN dotnet publish apps/api/AI.DocumentReader.Api.csproj -c Release -o /out --no-restore
+#15 ...
+
+#29 [web deps 1/4] FROM docker.io/library/node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32
+#29 resolve docker.io/library/node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 0.1s done
+#29 DONE 0.1s
+
+#30 [web internal] load build context
+#30 transferring context: 37.90kB 0.1s done
+#30 DONE 0.1s
+
+#31 [web deps 2/4] WORKDIR /app
+#31 CACHED
+
+#32 [web deps 3/4] COPY package*.json ./
+#32 DONE 0.2s
+
+#15 [api build 6/6] RUN dotnet publish apps/api/AI.DocumentReader.Api.csproj -c Release -o /out --no-restore
+#15 ...
+
+#33 [web deps 4/4] RUN npm ci --legacy-peer-deps
+#33 7.120 npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+#33 ...
+
+#15 [api build 6/6] RUN dotnet publish apps/api/AI.DocumentReader.Api.csproj -c Release -o /out --no-restore
+#15 16.86   AI.DocumentReader.Api -> /src/apps/api/bin/Release/net8.0/AI.DocumentReader.Api.dll
+#15 18.51   AI.DocumentReader.Api -> /out/
+#15 DONE 20.4s
+
+#33 [web deps 4/4] RUN npm ci --legacy-peer-deps
+#33 ...
+
+#34 [api runtime 2/4] WORKDIR /app
+#34 CACHED
+
+#35 [api runtime 3/4] RUN apt-get update     && apt-get install -y --no-install-recommends curl     && rm -rf /var/lib/apt/lists/*
+#35 CACHED
+
+#36 [api runtime 4/4] COPY --from=build /out .
+#36 DONE 3.0s
+
+#33 [web deps 4/4] RUN npm ci --legacy-peer-deps
+#33 ...
+
+#37 [api] exporting to image
+#37 exporting layers
+#37 exporting layers 4.0s done
+#37 exporting manifest sha256:03da78beae45ae93e4910917a23b19827f96a2cb535cb84a326ce20d90e015b8 0.0s done
+#37 exporting config sha256:f0b5197dd5ec83a1c4b719f9f40e7a0544739182d774422d44804eb1284ec318 0.0s done
+#37 exporting attestation manifest sha256:3475695938f4c0f8e0c9d916cda3b902e9f293ab78a06907c69b599b3024bad3
+#37 exporting attestation manifest sha256:3475695938f4c0f8e0c9d916cda3b902e9f293ab78a06907c69b599b3024bad3 0.1s done
+#37 exporting manifest list sha256:7fad167a562487b4b3b7aec9478ec58b7a2fb332c422ff7812b2d943c231d230 0.0s done
+#37 naming to docker.io/library/phase14-36f18896-api:latest
+#37 naming to docker.io/library/phase14-36f18896-api:latest done
+#37 unpacking to docker.io/library/phase14-36f18896-api:latest
+#37 unpacking to docker.io/library/phase14-36f18896-api:latest 1.0s done
+#37 DONE 5.3s
+
+#33 [web deps 4/4] RUN npm ci --legacy-peer-deps
+#33 25.94 npm warn deprecated eslint@9.27.0: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+#33 ...
+
+#38 [api] resolving provenance for metadata file
+#38 DONE 0.1s
+
+#33 [web deps 4/4] RUN npm ci --legacy-peer-deps
+#33 46.61 
+#33 46.61 added 505 packages, and audited 506 packages in 45s
+#33 46.62 
+#33 46.62 172 packages are looking for funding
+#33 46.62   run `npm fund` for details
+#33 46.63 
+#33 46.63 2 moderate severity vulnerabilities
+#33 46.63 
+#33 46.63 To address all issues (including breaking changes), run:
+#33 46.63   npm audit fix --force
+#33 46.63 
+#33 46.63 Run `npm audit` for details.
+#33 46.64 npm notice
+#33 46.64 npm notice New major version of npm available! 10.9.8 -> 12.0.2
+#33 46.64 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+#33 46.64 npm notice To update run: npm install -g npm@12.0.2
+#33 46.64 npm notice
+#33 DONE 52.2s
+
+#39 [web build 3/5] COPY --from=deps /app/node_modules ./node_modules
+#39 CACHED
+
+#40 [web build 4/5] COPY . .
+#40 DONE 0.1s
+
+#41 [web build 5/5] RUN npm run build
+#41 1.351 
+#41 1.351 > build
+#41 1.351 > next build
+#41 1.351 
+#41 2.648 ▲ Next.js 16.3.4 (Turbopack)
+#41 2.679 ✓ Running next.config.mjs took 29ms
+#41 2.690 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#41 2.690 This information is used to shape Next.js' roadmap and prioritize features.
+#41 2.690 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#41 2.690 https://nextjs.org/telemetry
+#41 2.690 
+#41 2.925 
+#41 3.027   Creating an optimized production build ...
+#41 14.21 ✓ Compiled successfully in 9.5s
+#41 14.22   Running TypeScript ...
+#41 22.52   Finished TypeScript in 8.3s ...
+#41 22.53   Collecting page data using 4 workers ...
+#41 23.63   Generating static pages using 4 workers (0/3) ...
+#41 24.66 ✓ Generating static pages using 4 workers (3/3) in 1029ms
+#41 24.67   Finalizing page optimization ...
+#41 24.69 
+#41 24.70 Route (app)
+#41 24.70 ┌ ○ /
+#41 24.70 └ ○ /_not-found
+#41 24.70 
+#41 24.70 
+#41 24.70 ○  (Static)  prerendered as static content
+#41 24.70 
+#41 25.08 npm notice
+#41 25.08 npm notice New major version of npm available! 10.9.8 -> 12.0.2
+#41 25.08 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+#41 25.08 npm notice To update run: npm install -g npm@12.0.2
+#41 25.08 npm notice
+#41 DONE 25.4s
+
+#42 [web runtime 3/6] COPY --from=build /app/.next ./.next
+#42 DONE 0.8s
+
+#43 [web runtime 4/6] COPY --from=build /app/public ./public
+#43 DONE 0.5s
+
+#44 [web runtime 5/6] COPY --from=build /app/package.json ./package.json
+#44 DONE 0.3s
+
+#45 [web runtime 6/6] COPY --from=deps /app/node_modules ./node_modules
+#45 DONE 23.0s
+
+#46 [web] exporting to image
+#46 exporting layers
+#46 exporting layers 36.3s done
+#46 exporting manifest sha256:e1724a6d03423cd6dcab5606839e019029a81593c5791e1451d64180896d2756
+#46 exporting manifest sha256:e1724a6d03423cd6dcab5606839e019029a81593c5791e1451d64180896d2756 0.2s done
+#46 exporting config sha256:c19a5fed44c27a52a7e19f3c6e3bca8426614999482ddf45f916dbbee85d2c45
+#46 exporting config sha256:c19a5fed44c27a52a7e19f3c6e3bca8426614999482ddf45f916dbbee85d2c45 0.7s done
+#46 exporting attestation manifest sha256:de46957e4627a2eb1d7c163cbe929b53dbeb27ec862906def8b19a29b583a335
+#46 exporting attestation manifest sha256:de46957e4627a2eb1d7c163cbe929b53dbeb27ec862906def8b19a29b583a335 1.0s done
+#46 exporting manifest list sha256:d9eb38767f5ef1752883a77d6d4a95156bf520cbff2d977884ef9da80a62ef78
+#46 exporting manifest list sha256:d9eb38767f5ef1752883a77d6d4a95156bf520cbff2d977884ef9da80a62ef78 0.3s done
+#46 naming to docker.io/library/phase14-36f18896-web:latest
+#46 naming to docker.io/library/phase14-36f18896-web:latest done
+#46 unpacking to docker.io/library/phase14-36f18896-web:latest
+#46 unpacking to docker.io/library/phase14-36f18896-web:latest 13.0s done
+#46 DONE 52.4s
+
+#47 [web] resolving provenance for metadata file
+#47 DONE 0.0s

@@ -1,0 +1,100 @@
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=False, testRowsExtracted=15
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=5507a84b-41cf-4375-8b80-3f8e14fb464c reportId=ad9d66df-0c7c-4f64-9ad5-79a07c35bf7b attempt=1 status=COMPLETED durationMs=98
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       Sending PDF 'pilot-27.pdf' to AI Service for analysis...
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 2771.8198ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 2771.9707ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=14
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 1040.3077ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 1040.4517ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=19feac58-6f1a-4692-9f52-b1dabb131e30 reportId=7c6e9f9c-ddb6-4242-aff6-c1b092235090 attempt=1 status=REVIEW_REQUIRED durationMs=3021
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       Sending PDF 'pilot-28.pdf' to AI Service for analysis...
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 4058.536ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 4058.6939ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=24
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=fe9ac431-cfc6-402e-bfc8-8f13d3573412 reportId=95667403-060a-4dd0-88c4-a4af328f2edc attempt=1 status=REVIEW_REQUIRED durationMs=4267
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       Sending PDF 'pilot-29.pdf' to AI Service for analysis...
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 1864.6132ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 1864.7377ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=14
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=168a7f0a-3508-43a8-817d-0d60a44e6713 reportId=4c2a5259-b942-42de-b36a-0f884269a361 attempt=1 status=REVIEW_REQUIRED durationMs=1937
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 1.7269ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 1.9148ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       Sending PDF 'pilot-30.pdf' to AI Service for analysis...
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 7169.1554ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 7169.2977ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=17
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=24e74ea4-3f47-4b60-9a8c-a59e96ef2323 reportId=44f0daa1-bcc1-4057-9171-fe3df871611e attempt=1 status=REVIEW_REQUIRED durationMs=7268
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       Sending PDF 'pilot-31.pdf' to AI Service for analysis...
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 1849.5002ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 1849.6382ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=4
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 942.7696ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 942.9127ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=eac07367-b8fb-46e9-ba7f-8f7937da31da reportId=70d36567-73fc-4292-8ce3-adc8379c8a90 attempt=1 status=REVIEW_REQUIRED durationMs=1922
+api-1  | warn: Microsoft.EntityFrameworkCore.Query[20504]
+api-1  |       Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.

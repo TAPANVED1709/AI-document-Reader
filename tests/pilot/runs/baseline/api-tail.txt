@@ -1,0 +1,100 @@
+api-1  |       Received HTTP response headers after 3829.1608ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 3829.4689ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=26
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=0c7b3eea-fcfb-4458-9a2f-b87bc3107c18 reportId=3ab358a4-cd64-4a92-a0ee-7564180dc644 attempt=1 status=REVIEW_REQUIRED durationMs=4029
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       Sending PDF 'pilot-29.pdf' to AI Service for analysis...
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 2052.6608ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 2052.7933ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=17
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 1212.3975ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 1212.584ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=f9dd3532-2a25-49f8-91f5-ba798142ca44 reportId=8ea41bbe-ecfd-4917-8767-b4b6a0dfc282 attempt=1 status=REVIEW_REQUIRED durationMs=2179
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       Sending PDF 'pilot-30.pdf' to AI Service for analysis...
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 6653.2879ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 6653.5175ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=21
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=619f1e03-d897-43d8-815d-6ad0ca7e5123 reportId=0b004b81-ed3d-4281-ac19-debb0596b835 attempt=1 status=REVIEW_REQUIRED durationMs=6818
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 1.2722ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 1.469ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       Sending PDF 'pilot-31.pdf' to AI Service for analysis...
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request POST http://ai-service:8000/analyse
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 1880.6583ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 1880.8804ms - 200
+api-1  | info: AI.DocumentReader.Api.Services.AiServiceClient[0]
+api-1  |       AI Service processed report: requiresOcr=True, testRowsExtracted=5
+api-1  | info: AI.DocumentReader.Api.Services.ReportProcessingService[0]
+api-1  |       Processing completed jobId=ccf5d543-8735-4f67-9d3d-c145fddb1ec4 reportId=1ef2de3e-3c0e-48a9-bec3-440208a63701 attempt=1 status=REVIEW_REQUIRED durationMs=2438
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[100]
+api-1  |       Start processing HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[100]
+api-1  |       Sending HTTP request GET http://ai-service:8000/health
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.ClientHandler[101]
+api-1  |       Received HTTP response headers after 3.9966ms - 200
+api-1  | info: System.Net.Http.HttpClient.IAiServiceClient.LogicalHandler[101]
+api-1  |       End processing HTTP request after 4.1331ms - 200
+api-1  | warn: Microsoft.EntityFrameworkCore.Query[20504]
+api-1  |       Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+api-1  | fail: Microsoft.AspNetCore.Server.Kestrel[13]
+api-1  |       Connection id "0HNOEJV6OVK66", Request id "0HNOEJV6OVK66:00000002": An unhandled exception was thrown by the application.
+api-1  |       System.InvalidOperationException: Record type 'AI.DocumentReader.Api.Controllers.ReportsController+ResultCorrectionRequest' has validation metadata defined on property 'CorrectedBy' that will be ignored. 'CorrectedBy' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ThrowIfRecordTypeHasValidationOnProperties()
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.Validation.DefaultComplexObjectValidationStrategy.Enumerator..ctor(ModelMetadata modelMetadata, String key, Object model)
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.Validation.DefaultComplexObjectValidationStrategy.GetChildren(ModelMetadata metadata, String key, Object model)
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.VisitChildren(IValidationStrategy strategy)
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.VisitComplexType(IValidationStrategy defaultStrategy)
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.VisitImplementation(ModelMetadata& metadata, String& key, Object model)
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit(ModelMetadata metadata, String key, Object model)
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.ParameterBinder.EnforceBindRequiredAndValidate(ObjectModelValidator baseObjectValidator, ActionContext actionContext, ParameterDescriptor parameter, ModelMetadata metadata, ModelBindingContext modelBindingContext, ModelBindingResult modelBindingResult, Object container)
+api-1  |          at Microsoft.AspNetCore.Mvc.ModelBinding.ParameterBinder.BindModelAsync(ActionContext actionContext, IModelBinder modelBinder, IValueProvider valueProvider, ParameterDescriptor parameter, ModelMetadata metadata, Object value, Object container)
+api-1  |          at Microsoft.AspNetCore.Mvc.Controllers.ControllerBinderDelegateProvider.<>c__DisplayClass0_0.<<CreateBinderDelegate>g__Bind|0>d.MoveNext()
+api-1  |       --- End of stack trace from previous location ---
+api-1  |          at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+api-1  |          at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+api-1  |          at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+api-1  |          at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+api-1  |          at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+api-1  |          at Program.<>c.<<<Main>$>b__0_10>d.MoveNext() in /src/apps/api/Program.cs:line 143
+api-1  |       --- End of stack trace from previous location ---
+api-1  |          at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+api-1  |          at Program.<>c.<<<Main>$>b__0_9>d.MoveNext() in /src/apps/api/Program.cs:line 129
+api-1  |       --- End of stack trace from previous location ---
+api-1  |          at Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol.ProcessRequests[TContext](IHttpApplication`1 application)

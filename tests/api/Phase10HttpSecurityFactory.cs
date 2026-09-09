@@ -16,6 +16,9 @@ public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
     private readonly SqliteConnection _connection = new("Data Source=:memory:");
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // The hosted worker starts before SeedAsync. Keep the in-memory schema
+        // alive across startup scopes instead of racing a vanished database.
+        if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
         builder.UseEnvironment("Development");
         builder.UseSetting("Security:AuthRequestsPerMinute", "100");
         builder.ConfigureServices(services =>

@@ -1,0 +1,365 @@
+documentId,rowId,actualId,panel,kind,severity,field,expected,actual,reviewed,unsafe
+pilot-01,extra-1,85a1979c-9fb7-4441-9d74-e1c5771ecbb9,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-02,extra-0,704a4e9b-5d97-444c-8ffb-46ae59c257bd,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-03,pilot-03-r01,c6e4db13-f116-40cb-9bb7-f64daade1b1a,CBC,FIELD_MISMATCH,E,calculatedStatus,LOW,UNKNOWN,True,False
+pilot-03,pilot-03-r01,c6e4db13-f116-40cb-9bb7-f64daade1b1a,CBC,FIELD_MISMATCH,C,referenceMax,17.0,,True,False
+pilot-03,pilot-03-r01,c6e4db13-f116-40cb-9bb7-f64daade1b1a,CBC,FIELD_MISMATCH,C,referenceMin,13.0,,True,False
+pilot-03,pilot-03-r01,c6e4db13-f116-40cb-9bb7-f64daade1b1a,CBC,FIELD_MISMATCH,C,referenceText,13.0 - 17.0,13.0 - 17.0 WBC,True,False
+pilot-03,pilot-03-r01,c6e4db13-f116-40cb-9bb7-f64daade1b1a,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-03,pilot-03-r01,c6e4db13-f116-40cb-9bb7-f64daade1b1a,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-03,pilot-03-r01,c6e4db13-f116-40cb-9bb7-f64daade1b1a,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-03,pilot-03-r02,9483a229-ac1f-45f3-9a20-e3bab12068a0,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r02,9483a229-ac1f-45f3-9a20-e3bab12068a0,CBC,FIELD_MISMATCH,C,referenceMax,11.0,,False,True
+pilot-03,pilot-03-r02,9483a229-ac1f-45f3-9a20-e3bab12068a0,CBC,FIELD_MISMATCH,C,referenceMin,4.0,,False,True
+pilot-03,pilot-03-r02,9483a229-ac1f-45f3-9a20-e3bab12068a0,CBC,FIELD_MISMATCH,C,referenceText,4.0 - 11.0,4.0 - 11.0 Platelet Coun,False,True
+pilot-03,pilot-03-r02,9483a229-ac1f-45f3-9a20-e3bab12068a0,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r03,91846df1-fac2-414f-816e-ee06ab2e8624,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r03,91846df1-fac2-414f-816e-ee06ab2e8624,CBC,FIELD_MISMATCH,C,referenceMax,400,,False,True
+pilot-03,pilot-03-r03,91846df1-fac2-414f-816e-ee06ab2e8624,CBC,FIELD_MISMATCH,C,referenceMin,150,,False,True
+pilot-03,pilot-03-r03,91846df1-fac2-414f-816e-ee06ab2e8624,CBC,FIELD_MISMATCH,C,referenceText,150 - 400,150 - 400 Hematocri,False,True
+pilot-03,pilot-03-r03,91846df1-fac2-414f-816e-ee06ab2e8624,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r04,d7f0b608-58da-4c04-abeb-2144d956b44a,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r04,d7f0b608-58da-4c04-abeb-2144d956b44a,CBC,FIELD_MISMATCH,C,referenceMax,50,,False,True
+pilot-03,pilot-03-r04,d7f0b608-58da-4c04-abeb-2144d956b44a,CBC,FIELD_MISMATCH,C,referenceMin,35,,False,True
+pilot-03,pilot-03-r04,d7f0b608-58da-4c04-abeb-2144d956b44a,CBC,FIELD_MISMATCH,C,referenceText,35 - 50,35 - 50 MCV,False,True
+pilot-03,pilot-03-r04,d7f0b608-58da-4c04-abeb-2144d956b44a,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r05,d43d92f6-04e9-4c6f-bc3f-7a4228038828,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r05,d43d92f6-04e9-4c6f-bc3f-7a4228038828,CBC,FIELD_MISMATCH,C,referenceMax,100,,False,True
+pilot-03,pilot-03-r05,d43d92f6-04e9-4c6f-bc3f-7a4228038828,CBC,FIELD_MISMATCH,C,referenceMin,80,,False,True
+pilot-03,pilot-03-r05,d43d92f6-04e9-4c6f-bc3f-7a4228038828,CBC,FIELD_MISMATCH,C,referenceText,80 - 100,80 - 100 MCH,False,True
+pilot-03,pilot-03-r05,d43d92f6-04e9-4c6f-bc3f-7a4228038828,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r06,47b03ccc-e2af-4b3d-bc2e-516fb5a8a4c7,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r06,47b03ccc-e2af-4b3d-bc2e-516fb5a8a4c7,CBC,FIELD_MISMATCH,C,referenceMax,33,,False,True
+pilot-03,pilot-03-r06,47b03ccc-e2af-4b3d-bc2e-516fb5a8a4c7,CBC,FIELD_MISMATCH,C,referenceMin,27,,False,True
+pilot-03,pilot-03-r06,47b03ccc-e2af-4b3d-bc2e-516fb5a8a4c7,CBC,FIELD_MISMATCH,C,referenceText,27 - 33,27 - 33 MCHC,False,True
+pilot-03,pilot-03-r06,47b03ccc-e2af-4b3d-bc2e-516fb5a8a4c7,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r07,5b46f6c2-1aa2-4692-8ab6-0e6596953087,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r07,5b46f6c2-1aa2-4692-8ab6-0e6596953087,CBC,FIELD_MISMATCH,C,referenceMax,36,,False,True
+pilot-03,pilot-03-r07,5b46f6c2-1aa2-4692-8ab6-0e6596953087,CBC,FIELD_MISMATCH,C,referenceMin,31,,False,True
+pilot-03,pilot-03-r07,5b46f6c2-1aa2-4692-8ab6-0e6596953087,CBC,FIELD_MISMATCH,C,referenceText,31 - 36,31 - 36 Neutrophils,False,True
+pilot-03,pilot-03-r07,5b46f6c2-1aa2-4692-8ab6-0e6596953087,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r08,2759f01f-2ff2-4a8d-861c-d051edd8396e,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r08,2759f01f-2ff2-4a8d-861c-d051edd8396e,CBC,FIELD_MISMATCH,C,referenceMax,75,,False,True
+pilot-03,pilot-03-r08,2759f01f-2ff2-4a8d-861c-d051edd8396e,CBC,FIELD_MISMATCH,C,referenceMin,40,,False,True
+pilot-03,pilot-03-r08,2759f01f-2ff2-4a8d-861c-d051edd8396e,CBC,FIELD_MISMATCH,C,referenceText,40 - 75,40 - 75 Lymphocytes,False,True
+pilot-03,pilot-03-r08,2759f01f-2ff2-4a8d-861c-d051edd8396e,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r09,24716f26-d019-472e-8a80-1d33b54d6cb6,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r09,24716f26-d019-472e-8a80-1d33b54d6cb6,CBC,FIELD_MISMATCH,C,referenceMax,45,,False,True
+pilot-03,pilot-03-r09,24716f26-d019-472e-8a80-1d33b54d6cb6,CBC,FIELD_MISMATCH,C,referenceMin,20,,False,True
+pilot-03,pilot-03-r09,24716f26-d019-472e-8a80-1d33b54d6cb6,CBC,FIELD_MISMATCH,C,referenceText,20 - 45,20 - 45 Monocytes,False,True
+pilot-03,pilot-03-r09,24716f26-d019-472e-8a80-1d33b54d6cb6,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r10,4876960c-c547-4fee-ba27-e004505cede4,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r10,4876960c-c547-4fee-ba27-e004505cede4,CBC,FIELD_MISMATCH,C,referenceMax,10,,False,True
+pilot-03,pilot-03-r10,4876960c-c547-4fee-ba27-e004505cede4,CBC,FIELD_MISMATCH,C,referenceMin,2,,False,True
+pilot-03,pilot-03-r10,4876960c-c547-4fee-ba27-e004505cede4,CBC,FIELD_MISMATCH,C,referenceText,2 - 10,2 - 10 Eosinophils,False,True
+pilot-03,pilot-03-r10,4876960c-c547-4fee-ba27-e004505cede4,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,pilot-03-r11,3d7e1864-2355-4c51-8dda-fe1bbbd2dec6,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-03,pilot-03-r11,3d7e1864-2355-4c51-8dda-fe1bbbd2dec6,CBC,FIELD_MISMATCH,C,referenceMax,6,,False,True
+pilot-03,pilot-03-r11,3d7e1864-2355-4c51-8dda-fe1bbbd2dec6,CBC,FIELD_MISMATCH,C,referenceMin,1,,False,True
+pilot-03,pilot-03-r11,3d7e1864-2355-4c51-8dda-fe1bbbd2dec6,CBC,FIELD_MISMATCH,C,referenceText,1 - 6,1 - 6 Basophils,False,True
+pilot-03,pilot-03-r11,3d7e1864-2355-4c51-8dda-fe1bbbd2dec6,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-03,extra-1,a99418c1-da53-40a1-ad41-0f9778f638c7,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-04,pilot-04-r01,51dd2285-452d-4a5b-b8fa-684b65698778,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-04,pilot-04-r01,51dd2285-452d-4a5b-b8fa-684b65698778,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-04,pilot-04-r06,f9b4678d-f4ef-4ff6-972e-7e34a5e58fca,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-04,pilot-04-r06,f9b4678d-f4ef-4ff6-972e-7e34a5e58fca,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-04,pilot-04-r07,edca5c7f-faf1-4be0-a4b7-14386830f695,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-04,pilot-04-r07,edca5c7f-faf1-4be0-a4b7-14386830f695,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-04,pilot-04-r08,0e840834-2475-4618-9785-c747f313b59c,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-04,pilot-04-r08,0e840834-2475-4618-9785-c747f313b59c,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-04,extra-3,b472da27-53db-418d-a910-66e5a30cca7d,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-05,pilot-05-r18,1bab8468-ed8c-4496-933e-18c07e20f438,Electrolytes,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-05,pilot-05-r18,1bab8468-ed8c-4496-933e-18c07e20f438,Electrolytes,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-05,extra-2,41e379b3-1edb-41fa-86d6-3e8282ab645c,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-05,extra-9,a878c6b3-049c-498e-b6eb-7a0a0a8c0b34,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-05,extra-16,9ee3ed76-a33e-48d3-9e6c-ddef293347de,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-06,pilot-06-r08,35393ca6-857b-443b-932c-05b8ffcd0c93,Liver,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-06,pilot-06-r08,35393ca6-857b-443b-932c-05b8ffcd0c93,Liver,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-06,pilot-06-r18,bc6bc5fa-1116-4cd4-82a7-c666a4ce593c,Electrolytes,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-06,pilot-06-r18,bc6bc5fa-1116-4cd4-82a7-c666a4ce593c,Electrolytes,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-06,extra-1,e233c5e2-9671-4e4e-8f04-2402016ac860,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-06,extra-7,2d0af7ac-eba9-4c80-b4d3-78ba0e18a71c,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-06,extra-17,71e4c881-2e19-4403-a9b3-cd58d4f55f3d,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-07,pilot-07-r06,038f2288-4dcc-42eb-9916-032ae15d5878,Liver,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-07,pilot-07-r06,038f2288-4dcc-42eb-9916-032ae15d5878,Liver,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-07,pilot-07-r16,ba20e36b-8c08-42c9-88d4-4e4aee86a762,Electrolytes,WRONG_ASSOCIATION,B,normalizedTestName,Ionized Calcium,lonized Calcium,True,False
+pilot-07,pilot-07-r16,ba20e36b-8c08-42c9-88d4-4e4aee86a762,Electrolytes,WRONG_ASSOCIATION,B,originalTestName,Ionized Calcium,lonized Calcium,True,False
+pilot-07,pilot-07-r16,ba20e36b-8c08-42c9-88d4-4e4aee86a762,Electrolytes,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-07,pilot-07-r16,ba20e36b-8c08-42c9-88d4-4e4aee86a762,Electrolytes,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-07,extra-6,e1fdb899-1e71-4b7a-80f6-33b147436b47,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-07,extra-16,e0e25eb3-9bc5-425b-896c-d372120b2600,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-08,pilot-08-r01,729fffca-2600-4fe3-9b6a-ec33785601f2,Other,WRONG_ASSOCIATION,B,sectionName,Metabolic,,False,True
+pilot-08,pilot-08-r02,717ffdb4-4d96-4775-b2d6-74a546017f22,Other,WRONG_ASSOCIATION,B,sectionName,Metabolic,,False,True
+pilot-08,pilot-08-r18,f081ac47-37fd-4710-82e2-18cd606292e7,Diabetes,WRONG_ASSOCIATION,B,sectionName,Biochemistry,Hematology,False,True
+pilot-08,pilot-08-r19,b9bfe635-0040-4883-9b05-c09b96c019a8,Diabetes,WRONG_ASSOCIATION,B,sectionName,Biochemistry,Hematology,False,True
+pilot-08,extra-0,9edefd15-a4e9-4146-b80c-08cc23eae2de,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-08,extra-4,279d4102-77c0-453f-bf67-3e181771c46d,Other,FALSE_POSITIVE,B,row,,Biochemistry Fasting Glucose,True,False
+pilot-08,extra-10,ff0aebd8-711f-47b2-aec5-67b7ca77fa22,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-08,extra-15,23abb4da-dfbc-4e2f-bb14-78440c86bd97,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-08,extra-18,2bb911c7-bbf4-45ee-ad4c-ac656e5e5b41,Other,FALSE_POSITIVE,B,row,,Metabolic Magnesium,True,False
+pilot-09,pilot-09-r03,ed887faf-4f30-4a31-aa04-ad918fd92dbd,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,True,False
+pilot-09,pilot-09-r03,ed887faf-4f30-4a31-aa04-ad918fd92dbd,CBC,FIELD_MISMATCH,C,referenceMax,400,,True,False
+pilot-09,pilot-09-r03,ed887faf-4f30-4a31-aa04-ad918fd92dbd,CBC,FIELD_MISMATCH,C,referenceMin,150,,True,False
+pilot-09,pilot-09-r03,ed887faf-4f30-4a31-aa04-ad918fd92dbd,CBC,FIELD_MISMATCH,C,referenceText,150 - 400,150 - 400 Hematocrit 36.2 % 35 - 50 MCV 83.1 fL 80 - 100,True,False
+pilot-09,pilot-09-r03,ed887faf-4f30-4a31-aa04-ad918fd92dbd,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-09,pilot-09-r03,ed887faf-4f30-4a31-aa04-ad918fd92dbd,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-09,pilot-09-r03,ed887faf-4f30-4a31-aa04-ad918fd92dbd,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-09,pilot-09-r07,b21110e3-6119-4dd9-abf0-4f34811ab23f,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-09,pilot-09-r07,b21110e3-6119-4dd9-abf0-4f34811ab23f,CBC,FIELD_MISMATCH,C,referenceMax,36,,False,True
+pilot-09,pilot-09-r07,b21110e3-6119-4dd9-abf0-4f34811ab23f,CBC,FIELD_MISMATCH,C,referenceMin,31,,False,True
+pilot-09,pilot-09-r07,b21110e3-6119-4dd9-abf0-4f34811ab23f,CBC,FIELD_MISMATCH,C,referenceText,31 - 36,31 -,False,True
+pilot-09,pilot-09-r07,b21110e3-6119-4dd9-abf0-4f34811ab23f,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-09,extra-10,56cebe3b-9359-41d6-83a6-530e04cadc37,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-09,extra-13,407add42-07eb-492e-93e2-6fba0fe16b87,Other,FALSE_POSITIVE,B,row,,Count,True,False
+pilot-09,extra-20,5dbbd306-703a-4a1b-a103-f4307f7448c9,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-09,extra-21,3defb6af-15b3-4206-a417-f58643df6539,Other,FALSE_POSITIVE,B,row,,Protein,False,True
+pilot-10,pilot-10-r03,58cc8c41-b2bb-4ba8-9191-74e44ac4839f,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,True,False
+pilot-10,pilot-10-r03,58cc8c41-b2bb-4ba8-9191-74e44ac4839f,CBC,FIELD_MISMATCH,C,referenceMax,400,,True,False
+pilot-10,pilot-10-r03,58cc8c41-b2bb-4ba8-9191-74e44ac4839f,CBC,FIELD_MISMATCH,C,referenceMin,150,,True,False
+pilot-10,pilot-10-r03,58cc8c41-b2bb-4ba8-9191-74e44ac4839f,CBC,FIELD_MISMATCH,C,referenceText,150 - 400,150 - 400 Hematocrit 36.2 % 35 - 50 MCV 83.1 fL 80 - 100,True,False
+pilot-10,pilot-10-r03,58cc8c41-b2bb-4ba8-9191-74e44ac4839f,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-10,pilot-10-r03,58cc8c41-b2bb-4ba8-9191-74e44ac4839f,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-10,pilot-10-r03,58cc8c41-b2bb-4ba8-9191-74e44ac4839f,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-10,pilot-10-r04,4177a497-4966-4cb5-b67b-d0b5139d7617,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-10,pilot-10-r04,4177a497-4966-4cb5-b67b-d0b5139d7617,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-10,pilot-10-r05,9b76817b-a121-4e4c-b84a-9633d7b034cf,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-10,pilot-10-r05,9b76817b-a121-4e4c-b84a-9633d7b034cf,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-10,pilot-10-r07,8c4991ef-8105-4687-ab0c-9d7254e8e023,CBC,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-10,pilot-10-r07,8c4991ef-8105-4687-ab0c-9d7254e8e023,CBC,FIELD_MISMATCH,C,referenceMax,36,,False,True
+pilot-10,pilot-10-r07,8c4991ef-8105-4687-ab0c-9d7254e8e023,CBC,FIELD_MISMATCH,C,referenceMin,31,,False,True
+pilot-10,pilot-10-r07,8c4991ef-8105-4687-ab0c-9d7254e8e023,CBC,FIELD_MISMATCH,C,referenceText,31 - 36,31 -,False,True
+pilot-10,pilot-10-r07,8c4991ef-8105-4687-ab0c-9d7254e8e023,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-10,pilot-10-r11,a023586e-d98a-4594-a0cf-6261b1f75cf6,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-10,pilot-10-r11,a023586e-d98a-4594-a0cf-6261b1f75cf6,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-10,pilot-10-r12,a7f224b4-393c-4400-963d-ae9ca4d737a6,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-10,pilot-10-r12,a7f224b4-393c-4400-963d-ae9ca4d737a6,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-10,extra-1,14f5fc9d-1cf2-4bcd-a0de-156a05b10077,Other,FALSE_POSITIVE,B,row,,Count,True,False
+pilot-10,extra-2,84e45d84-4ce4-4bd5-b8cd-2bb6914bbccf,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-10,extra-18,442eb6df-4bb7-4aa8-924d-fd086b33aa13,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-11,pilot-11-r16,ce9e2642-8123-402d-9e0e-6fb710c28661,Electrolytes,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-11,pilot-11-r16,ce9e2642-8123-402d-9e0e-6fb710c28661,Electrolytes,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-11,extra-1,73b036c2-e1f2-4c5a-b2e1-0cdd6131e00b,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-12,pilot-12-r01,,CBC,MISSED_ROW,D,row,Hemoglobin,,False,False
+pilot-12,pilot-12-r02,,CBC,MISSED_ROW,D,row,WBC,,False,False
+pilot-12,pilot-12-r03,,CBC,MISSED_ROW,D,row,Platelet Count,,False,False
+pilot-12,pilot-12-r04,,CBC,MISSED_ROW,D,row,Hematocrit,,False,False
+pilot-12,pilot-12-r05,,CBC,MISSED_ROW,D,row,MCV,,False,False
+pilot-12,pilot-12-r06,,CBC,MISSED_ROW,D,row,MCH,,False,False
+pilot-12,pilot-12-r07,,CBC,MISSED_ROW,D,row,MCHC,,False,False
+pilot-12,pilot-12-r08,,CBC,MISSED_ROW,D,row,Neutrophils,,False,False
+pilot-12,pilot-12-r09,,CBC,MISSED_ROW,D,row,Lymphocytes,,False,False
+pilot-12,pilot-12-r10,,CBC,MISSED_ROW,D,row,Monocytes,,False,False
+pilot-12,pilot-12-r11,,CBC,MISSED_ROW,D,row,Eosinophils,,False,False
+pilot-12,pilot-12-r12,,CBC,MISSED_ROW,D,row,Basophils,,False,False
+pilot-12,pilot-12-r13,,Lipids,MISSED_ROW,D,row,Total Cholesterol,,False,False
+pilot-12,pilot-12-r14,,Lipids,MISSED_ROW,D,row,HDL,,False,False
+pilot-12,pilot-12-r15,,Lipids,MISSED_ROW,D,row,LDL,,False,False
+pilot-12,pilot-12-r16,,Lipids,MISSED_ROW,D,row,Triglycerides,,False,False
+pilot-13,extra-9,81077d06-65b5-42a4-b912-873838017d60,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-14,pilot-14-r11,f3662db6-f72c-41c4-8a9f-a97ef8a1bf73,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-14,pilot-14-r11,f3662db6-f72c-41c4-8a9f-a97ef8a1bf73,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-15,extra-6,545c638c-641f-44f8-b5b2-66c35d13a3eb,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-16,pilot-16-r01,eacd17f5-9756-4870-948c-3b03e6ebd234,CBC,FIELD_MISMATCH,E,calculatedStatus,UNKNOWN,LOW,False,True
+pilot-16,pilot-16-r01,eacd17f5-9756-4870-948c-3b03e6ebd234,CBC,FIELD_MISMATCH,C,referenceMax,,17.0,False,True
+pilot-16,pilot-16-r01,eacd17f5-9756-4870-948c-3b03e6ebd234,CBC,FIELD_MISMATCH,C,referenceMin,,13.0,False,True
+pilot-16,pilot-16-r01,eacd17f5-9756-4870-948c-3b03e6ebd234,CBC,FIELD_MISMATCH,C,referenceType,TEXT_ONLY,BETWEEN,False,True
+pilot-16,pilot-16-r01,eacd17f5-9756-4870-948c-3b03e6ebd234,CBC,FIELD_MISMATCH,E,reviewRequired,True,False,False,True
+pilot-16,pilot-16-r01,eacd17f5-9756-4870-948c-3b03e6ebd234,CBC,FIELD_MISMATCH,E,reviewState,REVIEW_REQUIRED,AUTO_ACCEPTED,False,True
+pilot-16,extra-0,58e94d9e-a9e9-4ef9-bbce-0c797a6aa3c7,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-17,pilot-17-r01,1a9fbd4f-34a0-4a2b-a6a1-904c94c6e2e1,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-17,pilot-17-r01,1a9fbd4f-34a0-4a2b-a6a1-904c94c6e2e1,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-17,extra-14,f8851756-5ce5-477c-89f5-ea15fc9baae2,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-18,pilot-18-r01,7553f1b6-e7d2-427e-a4d4-61cc522a90da,CBC,FIELD_MISMATCH,C,referenceMax,14,13.0,True,False
+pilot-18,pilot-18-r01,7553f1b6-e7d2-427e-a4d4-61cc522a90da,CBC,FIELD_MISMATCH,C,referenceMin,10,9.0,True,False
+pilot-18,pilot-18-r01,7553f1b6-e7d2-427e-a4d4-61cc522a90da,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-18,pilot-18-r01,7553f1b6-e7d2-427e-a4d4-61cc522a90da,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-18,pilot-18-r11,1f6c9243-599f-43f6-89fb-6a774d8da9f1,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-18,pilot-18-r11,1f6c9243-599f-43f6-89fb-6a774d8da9f1,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-18,extra-1,97bc1890-ec8c-40a8-a846-18a8ea6f19af,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-18,extra-3,4df3bfaf-276e-46f3-813e-396ed5883150,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-19,extra-4,6bba6a44-2f50-49fb-9f6e-5efd3eb1c183,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-20,pilot-20-r02,be15435a-3430-4be3-a3cd-8cbd0aba2337,Urine,FIELD_MISMATCH,C,referenceText,Absent,Absen,False,True
+pilot-20,pilot-20-r04,94968c32-990a-41de-b4a3-799686bb5390,Urine,FIELD_MISMATCH,C,referenceText,Absent,Absen,False,True
+pilot-20,extra-3,17318139-bfe5-4fb7-a6f1-4d67b2a8bdc4,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-21,pilot-21-r02,e606eeb5-00ad-4241-8611-76b48a1be7db,Urine,FIELD_MISMATCH,C,referenceText,Absent,Absen,False,True
+pilot-21,pilot-21-r04,a5cead4d-6f14-4890-89b6-9a6e200f078b,Urine,FIELD_MISMATCH,C,referenceText,Absent,Absen,False,True
+pilot-21,extra-0,f2cd747f-2805-4c66-aa2e-2b825a520862,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-22,pilot-22-r01,8381d893-0800-4c75-a162-188415abd5b7,Thyroid,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,True,False
+pilot-22,pilot-22-r01,8381d893-0800-4c75-a162-188415abd5b7,Thyroid,FIELD_MISMATCH,C,referenceMax,4.0,,True,False
+pilot-22,pilot-22-r01,8381d893-0800-4c75-a162-188415abd5b7,Thyroid,FIELD_MISMATCH,C,referenceMin,0.4,,True,False
+pilot-22,pilot-22-r01,8381d893-0800-4c75-a162-188415abd5b7,Thyroid,FIELD_MISMATCH,C,referenceText,0.4 - 4.0,0.4 - 4.0 Free T4,True,False
+pilot-22,pilot-22-r01,8381d893-0800-4c75-a162-188415abd5b7,Thyroid,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-22,pilot-22-r01,8381d893-0800-4c75-a162-188415abd5b7,Thyroid,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-22,pilot-22-r01,8381d893-0800-4c75-a162-188415abd5b7,Thyroid,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-22,pilot-22-r02,21b306ea-a74e-41c8-bd44-d1d2816ad2d2,Thyroid,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r02,21b306ea-a74e-41c8-bd44-d1d2816ad2d2,Thyroid,FIELD_MISMATCH,C,referenceMax,1.8,,False,True
+pilot-22,pilot-22-r02,21b306ea-a74e-41c8-bd44-d1d2816ad2d2,Thyroid,FIELD_MISMATCH,C,referenceMin,0.8,,False,True
+pilot-22,pilot-22-r02,21b306ea-a74e-41c8-bd44-d1d2816ad2d2,Thyroid,FIELD_MISMATCH,C,referenceText,0.8 - 1.8,0.8 - 1.8 Iron Studies,False,True
+pilot-22,pilot-22-r02,21b306ea-a74e-41c8-bd44-d1d2816ad2d2,Thyroid,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r03,65898093-4c97-4579-8731-ba302df057bf,Iron,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r03,65898093-4c97-4579-8731-ba302df057bf,Iron,FIELD_MISMATCH,C,referenceMax,170,,False,True
+pilot-22,pilot-22-r03,65898093-4c97-4579-8731-ba302df057bf,Iron,FIELD_MISMATCH,C,referenceMin,50,,False,True
+pilot-22,pilot-22-r03,65898093-4c97-4579-8731-ba302df057bf,Iron,FIELD_MISMATCH,C,referenceText,50 - 170,50 - 170 Ferritin,False,True
+pilot-22,pilot-22-r03,65898093-4c97-4579-8731-ba302df057bf,Iron,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r04,7d8f2285-d479-4db9-a1f6-8803ace2a996,Iron,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r04,7d8f2285-d479-4db9-a1f6-8803ace2a996,Iron,FIELD_MISMATCH,C,referenceMax,150,,False,True
+pilot-22,pilot-22-r04,7d8f2285-d479-4db9-a1f6-8803ace2a996,Iron,FIELD_MISMATCH,C,referenceMin,15,,False,True
+pilot-22,pilot-22-r04,7d8f2285-d479-4db9-a1f6-8803ace2a996,Iron,FIELD_MISMATCH,C,referenceText,15 - 150,15 - 150 TIBC,False,True
+pilot-22,pilot-22-r04,7d8f2285-d479-4db9-a1f6-8803ace2a996,Iron,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r05,c5d21d96-0f27-4602-8251-20d79024bebc,Iron,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r05,c5d21d96-0f27-4602-8251-20d79024bebc,Iron,FIELD_MISMATCH,C,referenceMax,450,,False,True
+pilot-22,pilot-22-r05,c5d21d96-0f27-4602-8251-20d79024bebc,Iron,FIELD_MISMATCH,C,referenceMin,250,,False,True
+pilot-22,pilot-22-r05,c5d21d96-0f27-4602-8251-20d79024bebc,Iron,FIELD_MISMATCH,C,referenceText,250 - 450,250 - 450 Vitamin Profile,False,True
+pilot-22,pilot-22-r05,c5d21d96-0f27-4602-8251-20d79024bebc,Iron,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r06,2c016db1-a8d6-43c5-ad19-4a25a97eab95,Vitamins,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r06,2c016db1-a8d6-43c5-ad19-4a25a97eab95,Vitamins,FIELD_MISMATCH,C,referenceMax,900,,False,True
+pilot-22,pilot-22-r06,2c016db1-a8d6-43c5-ad19-4a25a97eab95,Vitamins,FIELD_MISMATCH,C,referenceMin,200,,False,True
+pilot-22,pilot-22-r06,2c016db1-a8d6-43c5-ad19-4a25a97eab95,Vitamins,FIELD_MISMATCH,C,referenceText,200 - 900,200 - 900 Vitamin D,False,True
+pilot-22,pilot-22-r06,2c016db1-a8d6-43c5-ad19-4a25a97eab95,Vitamins,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r07,d067de73-8760-4d28-ab13-e4c0f9d9b596,Vitamins,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r07,d067de73-8760-4d28-ab13-e4c0f9d9b596,Vitamins,FIELD_MISMATCH,C,referenceMax,50,,False,True
+pilot-22,pilot-22-r07,d067de73-8760-4d28-ab13-e4c0f9d9b596,Vitamins,FIELD_MISMATCH,C,referenceMin,20,,False,True
+pilot-22,pilot-22-r07,d067de73-8760-4d28-ab13-e4c0f9d9b596,Vitamins,FIELD_MISMATCH,C,referenceText,20 - 50,20 - 50 Folate,False,True
+pilot-22,pilot-22-r07,d067de73-8760-4d28-ab13-e4c0f9d9b596,Vitamins,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r08,440570ca-55f9-4698-b6b7-a5aa72e2c52b,Vitamins,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r08,440570ca-55f9-4698-b6b7-a5aa72e2c52b,Vitamins,FIELD_MISMATCH,C,referenceMax,20,,False,True
+pilot-22,pilot-22-r08,440570ca-55f9-4698-b6b7-a5aa72e2c52b,Vitamins,FIELD_MISMATCH,C,referenceMin,4,,False,True
+pilot-22,pilot-22-r08,440570ca-55f9-4698-b6b7-a5aa72e2c52b,Vitamins,FIELD_MISMATCH,C,referenceText,4 - 20,4 - 20 Lipid Profile,False,True
+pilot-22,pilot-22-r08,440570ca-55f9-4698-b6b7-a5aa72e2c52b,Vitamins,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r09,337ef870-3fe3-4af9-b940-8f9ee9db6c01,Lipids,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r09,337ef870-3fe3-4af9-b940-8f9ee9db6c01,Lipids,FIELD_MISMATCH,C,referenceMax,200,,False,True
+pilot-22,pilot-22-r09,337ef870-3fe3-4af9-b940-8f9ee9db6c01,Lipids,FIELD_MISMATCH,C,referenceOperator,<,,False,True
+pilot-22,pilot-22-r09,337ef870-3fe3-4af9-b940-8f9ee9db6c01,Lipids,FIELD_MISMATCH,C,referenceText,< 200,< 200 HDL,False,True
+pilot-22,pilot-22-r09,337ef870-3fe3-4af9-b940-8f9ee9db6c01,Lipids,FIELD_MISMATCH,C,referenceType,LESS_THAN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r10,2869fd04-2e48-417e-ac83-d83fc2c20ece,Lipids,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r10,2869fd04-2e48-417e-ac83-d83fc2c20ece,Lipids,FIELD_MISMATCH,C,referenceMin,40,,False,True
+pilot-22,pilot-22-r10,2869fd04-2e48-417e-ac83-d83fc2c20ece,Lipids,FIELD_MISMATCH,C,referenceOperator,>=,,False,True
+pilot-22,pilot-22-r10,2869fd04-2e48-417e-ac83-d83fc2c20ece,Lipids,FIELD_MISMATCH,C,referenceText,>= 40,>= 40 LDL,False,True
+pilot-22,pilot-22-r10,2869fd04-2e48-417e-ac83-d83fc2c20ece,Lipids,FIELD_MISMATCH,C,referenceType,GREATER_THAN_OR_EQUAL,TEXT_ONLY,False,True
+pilot-22,pilot-22-r11,a20b4b70-8c45-44af-8b9f-169e69b11ae5,Lipids,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r11,a20b4b70-8c45-44af-8b9f-169e69b11ae5,Lipids,FIELD_MISMATCH,C,referenceMax,130,,False,True
+pilot-22,pilot-22-r11,a20b4b70-8c45-44af-8b9f-169e69b11ae5,Lipids,FIELD_MISMATCH,C,referenceOperator,<=,,False,True
+pilot-22,pilot-22-r11,a20b4b70-8c45-44af-8b9f-169e69b11ae5,Lipids,FIELD_MISMATCH,C,referenceText,<= 130,<= 130 Triglycerides,False,True
+pilot-22,pilot-22-r11,a20b4b70-8c45-44af-8b9f-169e69b11ae5,Lipids,FIELD_MISMATCH,C,referenceType,LESS_THAN_OR_EQUAL,TEXT_ONLY,False,True
+pilot-22,pilot-22-r12,24ff5f15-890a-40fd-8e9b-5d13c59cd049,Lipids,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r12,24ff5f15-890a-40fd-8e9b-5d13c59cd049,Lipids,FIELD_MISMATCH,C,referenceMax,150,,False,True
+pilot-22,pilot-22-r12,24ff5f15-890a-40fd-8e9b-5d13c59cd049,Lipids,FIELD_MISMATCH,C,referenceMin,40,,False,True
+pilot-22,pilot-22-r12,24ff5f15-890a-40fd-8e9b-5d13c59cd049,Lipids,FIELD_MISMATCH,C,referenceText,40 - 150,40 - 150 Inflammation,False,True
+pilot-22,pilot-22-r12,24ff5f15-890a-40fd-8e9b-5d13c59cd049,Lipids,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,False,True
+pilot-22,pilot-22-r13,146e4a33-2487-444b-bdb8-9820c807c7c0,Inflammation,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,False,True
+pilot-22,pilot-22-r13,146e4a33-2487-444b-bdb8-9820c807c7c0,Inflammation,FIELD_MISMATCH,C,referenceMax,5,,False,True
+pilot-22,pilot-22-r13,146e4a33-2487-444b-bdb8-9820c807c7c0,Inflammation,FIELD_MISMATCH,C,referenceOperator,<,,False,True
+pilot-22,pilot-22-r13,146e4a33-2487-444b-bdb8-9820c807c7c0,Inflammation,FIELD_MISMATCH,C,referenceText,< 5,< 5 ESR,False,True
+pilot-22,pilot-22-r13,146e4a33-2487-444b-bdb8-9820c807c7c0,Inflammation,FIELD_MISMATCH,C,referenceType,LESS_THAN,TEXT_ONLY,False,True
+pilot-22,extra-0,0af0d5b2-9aa9-4453-a745-137bb13dbc31,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-23,extra-1,70838bfd-850d-4b8a-add9-1876fd8901da,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-23,extra-7,557e241c-5083-4be1-abd7-6d53ba28933f,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-23,extra-12,fa435335-102e-4e3c-9859-b2658155e0a0,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-24,extra-2,304712e8-2ec6-4285-ae9d-4799843adb99,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-25,extra-12,82667985-d9ef-426e-a8f8-89bc0e71bd0f,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-26,extra-3,47ae9031-e391-4224-b382-020815aed76a,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-26,extra-11,ecb358b8-21b0-4bea-a0bb-8827db236ec0,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,E,calculatedStatus,HIGH,UNKNOWN,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,WRONG_ASSOCIATION,B,normalizedTestName,HbA1c,HbAic,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,C,normalizedUnit,%,,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,WRONG_ASSOCIATION,B,originalTestName,HbA1c,HbAic,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,C,originalUnit,%,,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,C,referenceMax,5.6,,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,C,referenceMin,4.0,,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,C,referenceText,4.0 - 5.6,8 % H 4.0 - 5.6,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,E,reportedFlag,H,,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,C,unit,%,,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,E,valueNumeric,6.8,6.0,True,False
+pilot-27,pilot-27-r02,e461be09-4211-4db5-b0af-b662929cebc1,Diabetes,FIELD_MISMATCH,E,valueText,6.8,6,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,C,normalizedUnit,mg/dL,,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,C,originalUnit,mg/dL,,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,C,referenceMax,1.3,,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,C,referenceMin,0.7,,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,C,referenceText,0.7 - 1.3,9 mg/dL 0.7 - 1.3,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,C,unit,mg/dL,,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,E,valueNumeric,0.9,0.0,True,False
+pilot-27,pilot-27-r03,783ac3f1-9fc0-4cce-8891-799038354e14,Kidney,FIELD_MISMATCH,E,valueText,0.9,0,True,False
+pilot-27,pilot-27-r08,b7613147-865a-467e-bc92-c290f2d640f3,Liver,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-27,pilot-27-r08,b7613147-865a-467e-bc92-c290f2d640f3,Liver,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-27,extra-8,4e5d6589-39ce-4954-9473-abf4dbb81e12,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-28,pilot-28-r11,85eac0a2-12f7-4b34-aadf-31cea241fb3e,CBC,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-28,pilot-28-r11,85eac0a2-12f7-4b34-aadf-31cea241fb3e,CBC,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-28,pilot-28-r18,a91c4ec9-b6ea-4f40-bcbd-e5948e07ec7b,Liver,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-28,pilot-28-r18,a91c4ec9-b6ea-4f40-bcbd-e5948e07ec7b,Liver,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-28,pilot-28-r21,71491929-5e3e-47d8-8197-0ba12334f2cf,Liver,WRONG_ASSOCIATION,B,originalTestName,Total Bilirubin,Total Bilirubln,True,False
+pilot-28,pilot-28-r21,71491929-5e3e-47d8-8197-0ba12334f2cf,Liver,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-28,pilot-28-r21,71491929-5e3e-47d8-8197-0ba12334f2cf,Liver,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-28,pilot-28-r22,9c8cbeed-ade7-4502-9f97-f631455a8394,Liver,WRONG_ASSOCIATION,B,originalTestName,Direct Bilirubin,Direct BilirublIn,True,False
+pilot-28,pilot-28-r22,9c8cbeed-ade7-4502-9f97-f631455a8394,Liver,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-28,pilot-28-r22,9c8cbeed-ade7-4502-9f97-f631455a8394,Liver,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-28,extra-3,742f76bf-7738-46cc-8b97-2c283dea95e7,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-28,extra-15,5a8e4d12-5858-4ced-b39e-89d610030daa,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-29,pilot-29-r04,f894fcc4-fc42-47f1-897a-4f3a64ca0dcd,Electrolytes,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-29,pilot-29-r04,f894fcc4-fc42-47f1-897a-4f3a64ca0dcd,Electrolytes,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-29,pilot-29-r06,709f82cc-5ec1-4dd4-8df4-3ce588db19c1,Liver,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-29,pilot-29-r06,709f82cc-5ec1-4dd4-8df4-3ce588db19c1,Liver,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-29,extra-1,31429ae0-864e-4694-b246-2cd77e188405,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-29,extra-3,d7cee05f-c736-4a64-90a5-37312bf8370c,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-29,extra-15,a4a53d7f-8340-40fe-89f2-e67f57b09216,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-30,pilot-30-r01,5d7ec9c1-9b0d-4d16-ad07-f13a2b6d4acf,Other,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-30,pilot-30-r01,5d7ec9c1-9b0d-4d16-ad07-f13a2b6d4acf,Other,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-30,pilot-30-r01,5d7ec9c1-9b0d-4d16-ad07-f13a2b6d4acf,Other,WRONG_ASSOCIATION,B,sectionName,Metabolic,,True,False
+pilot-30,pilot-30-r02,403d2ae1-0972-44b9-8220-57f9fc6d6835,Other,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-30,pilot-30-r02,403d2ae1-0972-44b9-8220-57f9fc6d6835,Other,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-30,pilot-30-r02,403d2ae1-0972-44b9-8220-57f9fc6d6835,Other,WRONG_ASSOCIATION,B,sectionName,Metabolic,,True,False
+pilot-30,pilot-30-r03,2cd36e45-fa76-437b-acb4-0d156445cb03,Iron,WRONG_ASSOCIATION,B,originalTestName,Iron,lron,False,True
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,C,normalizedUnit,mg/L,,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,C,originalUnit,mg/L,,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,C,referenceMax,5,,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,C,referenceOperator,<,,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,C,referenceText,< 5,mg@/L<5,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,C,referenceType,LESS_THAN,TEXT_ONLY,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,E,reviewRequired,False,True,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,E,reviewState,AUTO_ACCEPTED,REVIEW_REQUIRED,True,False
+pilot-30,pilot-30-r09,57931ce3-ec64-4848-bb32-170e722bc95a,Inflammation,FIELD_MISMATCH,C,unit,mg/L,,True,False
+pilot-30,pilot-30-r15,d8aadcc9-2d09-4a46-a595-b8187cb75fbd,Urine,FIELD_MISMATCH,C,referenceText,Absent,Absen,False,True
+pilot-30,pilot-30-r17,ad71f4dc-1c6f-4526-b1f7-7b38f8adb3e9,Urine,FIELD_MISMATCH,C,referenceText,Absent,Absen,False,True
+pilot-30,extra-1,e1fdea5a-9ef5-4320-bf81-03ca39ca66d9,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-30,extra-12,474d08bb-5913-47fd-9cb8-bad5ef520403,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-30,extra-16,adad27f2-8715-46a8-9f92-e6098596463b,Other,FALSE_POSITIVE,B,row,,Page,True,False
+pilot-30,extra-20,411714b2-a7c6-4f54-90c5-fce43bb54967,Other,FALSE_POSITIVE,B,row,,Metabolic Magnesium,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,E,calculatedStatus,LOW,UNKNOWN,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,C,normalizedUnit,g/dL,,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,C,originalUnit,g/dL,,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,C,referenceMax,17.0,,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,C,referenceMin,13.0,,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,C,referenceText,13.0 - 17.0,8 g/dL L 13.0 - 17.0,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,E,reportedFlag,L,,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,C,unit,g/dL,,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,E,valueNumeric,10.8,10.0,True,False
+pilot-31,pilot-31-r01,173ac684-df17-4682-8d2d-9c5a3ef12152,CBC,FIELD_MISMATCH,E,valueText,10.8,10,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,E,calculatedStatus,HIGH,UNKNOWN,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,WRONG_ASSOCIATION,B,normalizedTestName,HbA1c,HbAic,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,C,normalizedUnit,%,,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,WRONG_ASSOCIATION,B,originalTestName,HbA1c,HbAic,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,C,originalUnit,%,,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,C,referenceMax,5.6,,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,C,referenceMin,4.0,,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,C,referenceText,4.0 - 5.6,8 % H 4.0 - 5.6,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,E,reportedFlag,H,,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,C,unit,%,,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,E,valueNumeric,6.8,6.0,True,False
+pilot-31,pilot-31-r02,d0c4a139-c6bb-4310-8422-05b03b2e6900,Diabetes,FIELD_MISMATCH,E,valueText,6.8,6,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,E,calculatedStatus,NORMAL,UNKNOWN,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,C,normalizedUnit,mg/dL,,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,C,originalUnit,mg/dL,,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,C,referenceMax,1.3,,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,C,referenceMin,0.7,,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,C,referenceText,0.7 - 1.3,9 mg/dL 0.7 - 1.3,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,C,referenceType,BETWEEN,TEXT_ONLY,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,C,unit,mg/dL,,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,E,valueNumeric,0.9,0.0,True,False
+pilot-31,pilot-31-r03,b42af962-a8dc-407c-a841-b577295fef3f,Kidney,FIELD_MISMATCH,E,valueText,0.9,0,True,False
+pilot-31,pilot-31-r04,0ff86d06-206b-4ead-952c-b9322342ca01,Urine,FIELD_MISMATCH,C,referenceText,Absent,Absen,False,True
+pilot-31,extra-1,eca51059-4ca8-4a15-a048-21bdbdc0db21,Other,FALSE_POSITIVE,B,row,,Page,True,False

@@ -1,0 +1,84 @@
+[
+  {
+    "command": "python -m pytest -q",
+    "cwd": "repository root; PYTHONPATH=apps/ai-service",
+    "exitCode": 0,
+    "passed": 140,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 2
+  },
+  {
+    "command": "dotnet test",
+    "cwd": "repository root",
+    "exitCode": 0,
+    "passed": 57,
+    "failed": 0,
+    "skipped": 0
+  },
+  {
+    "command": "dotnet build --configuration Release",
+    "cwd": "repository root",
+    "exitCode": 0,
+    "warnings": 0,
+    "errors": 0
+  },
+  {
+    "command": "npm test",
+    "cwd": "apps/web",
+    "exitCode": 0,
+    "passed": 17,
+    "failed": 0
+  },
+  {
+    "command": "npm run lint",
+    "cwd": "apps/web",
+    "exitCode": 0
+  },
+  {
+    "command": "npm run build",
+    "cwd": "apps/web",
+    "exitCode": 0
+  },
+  {
+    "command": "npm audit --json",
+    "cwd": "apps/web",
+    "exitCode": 1,
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 2,
+      "high": 0,
+      "critical": 0,
+      "total": 2
+    }
+  },
+  {
+    "command": "npm audit --omit=dev --json",
+    "cwd": "apps/web",
+    "exitCode": 0,
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    }
+  },
+  {
+    "command": "docker compose config --quiet",
+    "cwd": "isolated pilot project with temporary env/loopback override",
+    "exitCode": 0
+  },
+  {
+    "command": "docker compose build",
+    "cwd": "isolated pilot project with temporary env/loopback override",
+    "exitCode": 0
+  },
+  {
+    "command": "git diff --check",
+    "cwd": "repository root",
+    "exitCode": 0
+  }
+]

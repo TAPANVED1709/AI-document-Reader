@@ -65,7 +65,7 @@ class PdfExtractor:
         try:
             for idx, page in enumerate(doc):
                 page_num = idx + 1
-                page_text = page.get_text("text") or ""
+                page_text = cls._native_rows(page)
                 cleaned_text = page_text.strip()
                 char_count = len("".join(cleaned_text.split()))
 
@@ -83,6 +83,28 @@ class PdfExtractor:
             return pages, requires_ocr
         finally:
             doc.close()
+
+    @staticmethod
+    def _native_rows(page: fitz.Page) -> str:
+        """Join same-baseline cells inside a PDF text block, never adjacent rows.
+
+        Keep the PDF's block order: globally sorting by y interleaves independent
+        parallel panels. Wrapped lines remain separate for bounded parser joining.
+        """
+        output = []
+        for block in page.get_text("dict")["blocks"]:
+            bands = []
+            for line in block.get("lines", []):
+                text = "".join(span["text"] for span in line["spans"]).strip()
+                if not text:
+                    continue
+                x, y, _, _ = line["bbox"]
+                band = next((b for b in bands if abs(b[0] - y) <= 2), None)
+                if band is None:
+                    band = [y, []]; bands.append(band)
+                band[1].append((x, text))
+            output.extend(" ".join(text for _, text in sorted(band[1])) for band in bands)
+        return "\n".join(output)
 
     @staticmethod
     def render_page_to_image(page: fitz.Page, dpi: int = 300) -> Image.Image:

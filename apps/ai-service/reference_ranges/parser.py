@@ -50,6 +50,8 @@ class ReferenceRangeParser:
             age_range = re.fullmatch(r"(\d+(?:\.\d+)?)\s*(?:-|to)\s*(\d+(?:\.\d+)?)\s*(?:year|years|month|months)", label, re.I)
             if age_range and age_years is not None:
                 low, high = float(age_range.group(1)), float(age_range.group(2))
+                if "month" in label:
+                    low, high = low / 12, high / 12
                 age_match = low <= age_years <= high
             if sex_match or age_match or (label == "adult" and age_years is not None and age_years >= 18):
                 matches.append(segment)

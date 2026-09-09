@@ -15,15 +15,15 @@ namespace AI.DocumentReader.Api.Controllers;
 public class ReportsController : ControllerBase
 {
     public record ResultCorrectionRequest(
-        [property: MaxLength(255)] string? TestName,
+        [MaxLength(255)] string? TestName,
         decimal? Value,
-        [property: MaxLength(100)] string? ValueText,
-        [property: MaxLength(50)] string? Unit,
+        [MaxLength(100)] string? ValueText,
+        [MaxLength(50)] string? Unit,
         decimal? ReferenceMin,
         decimal? ReferenceMax,
-        [property: MaxLength(100)] string? ReferenceText,
-        [property: MaxLength(1000)] string? Reason,
-        [property: MaxLength(255)] string? CorrectedBy);
+        [MaxLength(100)] string? ReferenceText,
+        [MaxLength(1000)] string? Reason,
+        [MaxLength(255)] string? CorrectedBy);
 
     private readonly DocumentDbContext _dbContext;
     private readonly ILocalStorageService _storageService;
@@ -223,8 +223,10 @@ public class ReportsController : ControllerBase
         if (_enforceAuthorization && !await _authorization.CanViewReportAsync(User, reportId, cancellationToken)) { await Audit("ACCESS_DENIED", "LabResult", resultId, false, cancellationToken); return NotFound(new { error = "Result was not found." }); }
         var exists = await _dbContext.LabResults.AnyAsync(r => r.Id == resultId && r.MedicalReportId == reportId, cancellationToken);
         if (!exists) return NotFound(new { error = "Result was not found." });
-        var entries = await _dbContext.ResultCorrectionAudits.AsNoTracking().Where(a => a.LabResultId == resultId).OrderBy(a => a.ChangedAt).ToListAsync(cancellationToken);
-        return Ok(entries);
+        var entries = await _dbContext.ResultCorrectionAudits.AsNoTracking().Where(a => a.LabResultId == resultId).ToListAsync(cancellationToken);
+        // SQLite cannot order DateTimeOffset values; this already bounded,
+        // per-result audit list must remain readable in local development too.
+        return Ok(entries.OrderBy(a => a.ChangedAt));
     }
 
     private Task Audit(string action, string resourceType, Guid? resourceId, bool success, CancellationToken ct) => _audit is null ? Task.CompletedTask : _audit.RecordAsync(User, action, success, resourceType, resourceId, ct);

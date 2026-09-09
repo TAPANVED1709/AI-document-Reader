@@ -1,0 +1,2 @@
+# Fixture generation only; not a production OCR dependency.
+reportlab==5.0.1

@@ -1,0 +1,19 @@
+
+> test
+> vitest run --pool=forks --poolOptions.forks.singleFork
+
+
+ RUN  v3.2.7 C:/Users/tapan/OneDrive/Desktop/Projects/AI-document-Reader/apps/web
+
+ ✓ components/UploadZone.test.tsx (2 tests) 3831ms
+   ✓ UploadZone > renders the upload workflow  3006ms
+   ✓ UploadZone > rejects non-PDF files before upload  798ms
+ ✓ lib/panels.test.ts (11 tests) 153ms
+ ✓ lib/results.test.ts (2 tests) 7ms
+ ✓ app/page.test.tsx (2 tests) 4ms
+
+ Test Files  4 passed (4)
+      Tests  17 passed (17)
+   Start at  23:56:07
+   Duration  63.80s (transform 3.97s, setup 5.14s, collect 8.69s, tests 4.00s, environment 18.29s, prepare 3.17s)
+

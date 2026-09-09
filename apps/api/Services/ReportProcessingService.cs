@@ -79,6 +79,13 @@ public sealed class ReportProcessingService : IReportProcessingService
         { throw; }
         catch (Exception ex)
         {
+            // Failed result inserts remain Added after a rolled-back save. Retrying
+            // those entities while saving FAILED repeats the same SQL error and
+            // strands the job in PROCESSING (Phase 14 parallel-column fixture).
+            foreach (var entry in _db.ChangeTracker.Entries<ValidationIssue>().Where(x => x.State == EntityState.Added).ToList())
+                entry.State = EntityState.Detached;
+            foreach (var entry in _db.ChangeTracker.Entries<LabResult>().Where(x => x.State == EntityState.Added).ToList())
+                entry.State = EntityState.Detached;
             run.Status = AnalysisStatus.Failed; run.CompletedAt = DateTimeOffset.UtcNow;
             var transient = ex is HttpRequestException || ex.Message.Contains("unreachable", StringComparison.OrdinalIgnoreCase) || ex is IOException;
             job.LastErrorCode = ex.Message.Contains("PAGE_LIMIT_EXCEEDED", StringComparison.OrdinalIgnoreCase) ? "PAGE_LIMIT_EXCEEDED" : ex.Message.Contains("PDF_INVALID", StringComparison.OrdinalIgnoreCase) ? "PDF_INVALID" : ex.Message.Contains("OCR", StringComparison.OrdinalIgnoreCase) ? "OCR_UNAVAILABLE" : transient ? "AI_SERVICE_UNAVAILABLE" : "PARSER_FAILED";

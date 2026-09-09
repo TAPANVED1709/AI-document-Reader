@@ -1,6 +1,7 @@
 """Deterministic, conservative multi-layout laboratory parser."""
 import json
 import re
+from statistics import median
 from typing import List, Optional
 from core.extractor import PageData
 from normalization import TestNameNormalizer, UnitNormalizer
@@ -18,39 +19,92 @@ class LabRowParser(BaseParser):
         self.names = TestNameNormalizer()
         self.units = UnitNormalizer()
         self.references = ReferenceRangeParser()
+        self.SECTIONS = {**self.SECTIONS, "biochemistry": "Biochemistry", "metabolic": "Metabolic"}
 
     def parse(self, pages: List[PageData]) -> List[LabResultItem]:
         results = []
         for page in pages:
             rows = self._rows(page)
             section = None
+            section_confidence = 1.0
             age_years, sex = self._metadata(page.text)
             method = None
             section_has_result = False
+            consumed = set()
             for index, (line, tokens) in enumerate(rows):
+                if index in consumed: continue
                 key = self._key(line)
+                if page.source == "OCR" and key == "lron studies": key = "iron studies"
                 if key in self.SECTIONS:
-                    section = self.SECTIONS[key]; method = None; section_has_result = False; continue
+                    section = self.SECTIONS[key]
+                    section_confidence = min((t.confidence for t in tokens),default=1.0)
+                    method = None; section_has_result = False; continue
                 row_method_match = re.match(r"method\s*:\s*(.+)", line, re.I)
                 if row_method_match:
                     if not section_has_result: method = row_method_match.group(1).strip()
                     continue
                 if self._ignored(line): continue
+                # Join a wrapped name only when the combined name is recognized.
+                # Never greedily absorb the next three complete result rows.
+                if self._looks_like_name(line) and index + 1 < len(rows):
+                    following, following_tokens = rows[index + 1]
+                    if self._key(following) not in self.SECTIONS:
+                        candidate = self._parse_row(line + " " + following, page.page_number, section, tokens + following_tokens, method, age_years, sex)
+                        if candidate and self.names.normalize(candidate.originalName).confidence >= .88:
+                            line += " " + following; tokens = tokens + following_tokens; consumed.add(index + 1)
+                # A dangling printed interval may continue on one numeric-only line.
+                next_index = index + 2 if index + 1 in consumed else index + 1
+                if re.search(r"\d\s*[-–]\s*$", line) and next_index < len(rows):
+                    following, following_tokens = rows[next_index]
+                    if re.fullmatch(r"[+-]?(?:\d+(?:\.\d+)?|\.\d+)", following.strip()):
+                        line += " " + following; tokens = tokens + following_tokens; consumed.add(next_index)
                 item = self._parse_row(line, page.page_number, section, tokens, method, age_years, sex)
                 if item:
-                    results.append(item); section_has_result = True; continue
-                if self._looks_like_name(line) and index + 1 < len(rows):
-                    block = " ".join(rows[j][0] for j in range(index, min(index + 4, len(rows))))
-                    block_tokens = [t for j in range(index, min(index + 4, len(rows))) for t in rows[j][1]]
-                    item = self._parse_row(block, page.page_number, section, block_tokens, method, age_years, sex)
-                    if item: results.append(item); section_has_result = True
+                    if section is not None:
+                        item.fieldConfidences["association"] = section_confidence
+                    item.confidence = min(item.confidence, section_confidence)
+                    item.lowConfidence |= section_confidence < .8
+                    item.reviewRequired |= section_confidence < .8
+                    results.append(item); section_has_result = True
         return results
 
     def _rows(self, page):
         if page.tokens:
-            grouped = {}
-            for token in page.tokens: grouped.setdefault(token.line, []).append(token)
-            return [(" ".join(t.text for t in sorted(grouped[k], key=lambda x:x.x)), sorted(grouped[k], key=lambda x:x.x)) for k in sorted(grouped)]
+            # OCR line IDs sometimes span two panels or split one printed row.
+            # Recover physical baselines, retaining every source token/confidence.
+            bands = []
+            typical_height = median(t.height for t in page.tokens if t.height > 0)
+            for token in sorted(page.tokens, key=lambda t: (t.y + t.height / 2, t.x)):
+                center = token.y + token.height / 2
+                band = next((b for b in reversed(bands) if abs(b[0] - center) < typical_height * .65), None)
+                if band is None: band = [center, []]; bands.append(band)
+                band[1].append(token)
+            cuts = []
+            for _, band in bands:
+                ordered = sorted(band, key=lambda t:t.x)
+                for i in range(1,len(ordered)):
+                    left,right=ordered[i-1],ordered[i]
+                    if right.x-left.x-left.width < typical_height*6: continue
+                    text=" ".join(t.text for t in ordered[i:])
+                    # A numeric/unit/reference cell is not a separate panel.
+                    is_heading=self._key(text) in self.SECTIONS
+                    is_row=bool(re.match(r"[A-Za-z]",text) and re.search(self.VALUE,text,re.I) and not self._ignored(text))
+                    if is_heading or is_row: cuts.append((left.x+left.width+right.x)/2)
+            # Require repeated evidence for a gutter, not a single wide space.
+            gutter=median(cuts) if len(cuts)>=2 else None
+            output=[]
+            for column in range(2 if gutter is not None else 1):
+                column_tokens=[t for t in page.tokens if gutter is None or (t.x>=gutter)==bool(column)]
+                column_bands=[]
+                for token in sorted(column_tokens,key=lambda t:(t.y+t.height/2,t.x)):
+                    center=token.y+token.height/2
+                    band=next((b for b in reversed(column_bands) if abs(b[0]-center)<typical_height*.65),None)
+                    if band is None: band=[center,[]]; column_bands.append(band)
+                    band[1].append(token)
+                for _,band in column_bands:
+                    selected=sorted(band,key=lambda t:t.x)
+                    output.append((" ".join(t.text for t in selected),selected))
+            return output
         return [(line.strip(), []) for line in page.text.splitlines() if line.strip()]
 
     @staticmethod
@@ -58,6 +112,8 @@ class LabRowParser(BaseParser):
 
     def _ignored(self, line):
         low = line.lower().strip()
+        if re.fullmatch(r"page\s+\d+\s*(?:(?:of|/)\s*\d+)?", low): return True
+        if low.startswith(("sample hemolysed", "sample hemolyzed", "repeat advised", "fasting sample", "reference range revised")): return True
         if any(x in low for x in self.IGNORE): return True
         if low.startswith("cell count "): return True
         if low.startswith(("method:", "reference range", "biological reference", "observed value", "test name", "investigation", "parameter", "age:", "age ", "sex:", "sex ", "gender:", "gender ")): return True
@@ -79,10 +135,10 @@ class LabRowParser(BaseParser):
         raw_name = text[:first.start()].strip(" :-|\t")
         if not raw_name or len(raw_name) < 2 or not re.search("[A-Za-z]", raw_name) or self._ignored(raw_name): return None
         value_text = first.group(0).strip()
-        remainder = text[first.end():].strip(" :|\\t")
+        remainder = text[first.end():].strip(" :|\t")
         unit_match = re.match(self.UNIT, remainder, re.I)
         original_unit = unit_match.group(0) if unit_match else None
-        after_unit = remainder[unit_match.end():].strip(" :|\\t") if unit_match else remainder
+        after_unit = remainder[unit_match.end():].strip(" :|\t") if unit_match else remainder
         after_unit = re.sub(r"\b(?:reference(?: range| interval)?|biological reference interval|reference)\s*:?\s*", "", after_unit, flags=re.I).strip()
         flag = None
         flag_match = re.match(r"(H|HIGH|L|LOW|N|NORMAL|A|ABNORMAL|\*)\b", after_unit, re.I)
@@ -98,7 +154,7 @@ class LabRowParser(BaseParser):
         name = self.names.normalize(raw_name)
         textual = value_text.lower() in {"negative","positive","reactive","non-reactive","trace","nil","absent","present"}
         demographic_ambiguous = ref.type == "TEXT_ONLY" and bool(re.search(r"\b(?:male|female|adult|year|years|month|months)\s*:", ref.text or "", re.I))
-        association_ambiguous = bool(re.search(r"(?:\d|[<>])\s+[A-Za-z]{2,}.*(?:\d|[<>])", after_unit))
+        association_ambiguous = ref.type == "TEXT_ONLY" and (numeric is not None or bool(re.search(r"(?:\d|[<>])\s+[A-Za-z]{2,}.*(?:\d|[<>])", after_unit)))
         conf = {"name":name.confidence,"value":.95 if numeric is not None or textual else .55,"unit":.95 if original_unit or textual else .55,"ref":.55 if ref.type == "UNKNOWN" else .95}
         if demographic_ambiguous or association_ambiguous: conf["ref"] = .55
         confidence = min(conf.values())
@@ -108,16 +164,15 @@ class LabRowParser(BaseParser):
         if tokens:
             x,y=min(t.x for t in tokens),min(t.y for t in tokens)
             item.boundingBoxJson=json.dumps({"x":x,"y":y,"width":max(t.x+t.width for t in tokens)-x,"height":max(t.y+t.height for t in tokens)-y,"page":page,"coordinateSpace":"rendered_pixels","dpi":300})
-            item.fieldConfidences={k:min((t.confidence for t in tokens),default=0.) for k in item.fieldConfidences}
+            item.fieldConfidences={k:min(v,min((t.confidence for t in tokens),default=0.)) for k,v in item.fieldConfidences.items()}
             item.confidence=round(min(item.fieldConfidences.values()),2); item.lowConfidence=item.confidence<.8; item.reviewRequired |= item.lowConfidence
         return item
 
     @staticmethod
     def _metadata(text: str) -> tuple[float | None, str | None]:
-        age = re.search(r"\bage\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(years?|yrs?|months?)?\b", text, re.I)
-        age_years = None if not age else float(age.group(1)) / 12 if age.group(2) and age.group(2).lower().startswith("month") else float(age.group(1))
-        sex = re.search(r"\b(?:sex|gender)\s*[:\-]?\s*(male|female|m|f)\b", text, re.I)
-        return age_years, sex.group(1) if sex else None
+        ages = {float(m.group(1)) / (12 if (m.group(2) or "").lower().startswith("month") else 1) for m in re.finditer(r"\bage\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*(years?|yrs?|months?)?\b", text, re.I)}
+        sexes = {m.group(1).lower()[0] for m in re.finditer(r"\b(?:sex|gender)\s*[:\-]?\s*(male|female|m|f)\b", text, re.I)}
+        return next(iter(ages)) if len(ages)==1 else None, next(iter(sexes)) if len(sexes)==1 else None
 
     @staticmethod
     def _number(value):

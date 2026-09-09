@@ -1,0 +1,85 @@
+FFFFFF.F                                                                 [100%]
+================================== FAILURES ===================================
+___________________ test_page_counter_never_becomes_result ____________________
+
+    def test_page_counter_never_becomes_result():
+>       assert len(parse("Page 1 of 3\nHemoglobin 10.8 g/dL 13 - 17"))==1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([LabResultItem(boundingBoxJson=None, fieldConfidences={'name': 0.7, 'value': 0.95, 'unit': 0.55, 'ref': 0.95}, lowConf...valueText='10.8', unit='g/dL', referenceMin=13.0, referenceMax=17.0, referenceText='13 - 17', page=1, confidence=0.95)])
+E        +    where [LabResultItem(boundingBoxJson=None, fieldConfidences={'name': 0.7, 'value': 0.95, 'unit': 0.55, 'ref': 0.95}, lowConf...valueText='10.8', unit='g/dL', referenceMin=13.0, referenceMax=17.0, referenceText='13 - 17', page=1, confidence=0.95)] = parse('Page 1 of 3\nHemoglobin 10.8 g/dL 13 - 17')
+
+apps\ai-service\tests\test_phase14_regressions.py:17: AssertionError
+_______________ test_native_three_column_cells_keep_own_ranges ________________
+
+    def test_native_three_column_cells_keep_own_ranges():
+        pages,_=PdfExtractor.extract_from_bytes((FIXTURES/"pilot-03.pdf").read_bytes())
+        values=LabRowParser().parse(pages)
+>       assert len(values)==12
+E       AssertionError: assert 13 == 12
+E        +  where 13 = len([LabResultItem(boundingBoxJson=None, fieldConfidences={'name': 0.7, 'value': 0.95, 'unit': 0.55, 'ref': 0.95}, lowConf...t='83.1', unit='fL', referenceMin=None, referenceMax=None, referenceText='80 - 100 MCH', page=1, confidence=0.95), ...])
+
+apps\ai-service\tests\test_phase14_regressions.py:23: AssertionError
+___________ test_wrapped_rows_consumed_once_and_reference_completed ___________
+
+    def test_wrapped_rows_consumed_once_and_reference_completed():
+        pages,_=PdfExtractor.extract_from_bytes((FIXTURES/"pilot-09.pdf").read_bytes())
+        values=LabRowParser().parse(pages)
+>       assert len(values)==20
+E       AssertionError: assert 24 == 20
+E        +  where 24 = len([LabResultItem(boundingBoxJson=None, fieldConfidences={'name': 0.7, 'value': 0.95, 'unit': 0.55, 'ref': 0.95}, lowConf...lueText='36.2', unit='%', referenceMin=35.0, referenceMax=50.0, referenceText='35 - 50', page=1, confidence=0.95), ...])
+
+apps\ai-service\tests\test_phase14_regressions.py:31: AssertionError
+_____________ test_conflicting_metadata_does_not_select_first_sex _____________
+
+    def test_conflicting_metadata_does_not_select_first_sex():
+        r=parse("Sex: Male   Sex: Female\nHemoglobin 10.8 g/dL Male: 13 - 17; Female: 12 - 15")[0]
+>       assert r.referenceType=="TEXT_ONLY" and r.referenceMin is None and r.reviewRequired
+E       AssertionError: assert ('BETWEEN' == 'TEXT_ONLY'
+E         
+E         - TEXT_ONLY
+E         + BETWEEN)
+
+apps\ai-service\tests\test_phase14_regressions.py:39: AssertionError
+______________________ test_month_bounds_use_month_units ______________________
+
+    def test_month_bounds_use_month_units():
+        r=parse("Age: 8 months\nHemoglobin 10.8 g/dL 0-6 months: 9 - 13; 7-12 months: 10 - 14")[0]
+>       assert (r.referenceMin,r.referenceMax)==(10,14)
+E       assert (9.0, 13.0) == (10, 14)
+E         
+E         At index 0 diff: 9.0 != 10
+E         Use -v to get more diff
+
+apps\ai-service\tests\test_phase14_regressions.py:44: AssertionError
+________ test_biochemistry_and_metabolic_sections_do_not_prepend_names ________
+
+    def test_biochemistry_and_metabolic_sections_do_not_prepend_names():
+        values=parse("Metabolic\nMagnesium 2.1 mg/dL 1.7 - 2.4\nBiochemistry\nGlucose 92 mg/dL 70 - 99")
+>       assert [(r.originalName,r.section) for r in values]==[("Magnesium","Metabolic"),("Glucose","Biochemistry")]
+E       AssertionError: assert [('Metabolic ...ucose', None)] == [('Magnesium'...iochemistry')]
+E         
+E         At index 0 diff: ('Metabolic Magnesium', None) != ('Magnesium', 'Metabolic')
+E         Left contains 2 more items, first extra item: ('Biochemistry Glucose', None)
+E         Use -v to get more diff
+
+apps\ai-service\tests\test_phase14_regressions.py:50: AssertionError
+_______________ test_parallel_ocr_panels_keep_rows_and_sections _______________
+
+    @pytest.mark.skipif(not is_tesseract_available(),reason="Local Tesseract unavailable")
+    def test_parallel_ocr_panels_keep_rows_and_sections():
+        pages=LocalOcrEngine.ocr_from_bytes((FIXTURES/"pilot-12.pdf").read_bytes())
+        values=LabRowParser().parse(pages)
+>       assert len(values)==16
+E       assert 11 == 16
+E        +  where 11 = len([LabResultItem(boundingBoxJson='{"x": 4227, "y": 311, "width": 201, "height": 40, "page": 1, "coordinateSpace": "rende...unit='%', referenceMin=None, referenceMax=None, referenceText='35 - 50 Basophils 1%0-2', page=1, confidence=0.77), ...])
+
+apps\ai-service\tests\test_phase14_regressions.py:62: AssertionError
+=========================== short test summary info ===========================
+FAILED apps/ai-service/tests/test_phase14_regressions.py::test_page_counter_never_becomes_result
+FAILED apps/ai-service/tests/test_phase14_regressions.py::test_native_three_column_cells_keep_own_ranges
+FAILED apps/ai-service/tests/test_phase14_regressions.py::test_wrapped_rows_consumed_once_and_reference_completed
+FAILED apps/ai-service/tests/test_phase14_regressions.py::test_conflicting_metadata_does_not_select_first_sex
+FAILED apps/ai-service/tests/test_phase14_regressions.py::test_month_bounds_use_month_units
+FAILED apps/ai-service/tests/test_phase14_regressions.py::test_biochemistry_and_metabolic_sections_do_not_prepend_names
+FAILED apps/ai-service/tests/test_phase14_regressions.py::test_parallel_ocr_panels_keep_rows_and_sections
+7 failed, 1 passed in 2.65s
