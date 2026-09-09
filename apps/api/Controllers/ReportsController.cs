@@ -142,7 +142,7 @@ public class ReportsController : ControllerBase
             var calculatedStatus = _rangeClassifier.Classify(
                 extracted.Value,
                 extracted.ReferenceMin,
-                extracted.ReferenceMax
+                extracted.ReferenceMax, extracted.ReferenceType
             );
 
             var resultEntity = new LabResult
@@ -174,6 +174,8 @@ public class ReportsController : ControllerBase
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
+            if (extracted.ValidationIssues is not null)
+                resultEntity.ValidationIssues = extracted.ValidationIssues.Select(i => new ValidationIssue { Code = i.Code, Severity = i.Severity, FieldName = i.Field, Message = i.Message, RequiresReview = i.RequiresReview }).ToList();
             labResults.Add(resultEntity);
             _dbContext.LabResults.Add(resultEntity);
         }
@@ -198,7 +200,7 @@ public class ReportsController : ControllerBase
     public async Task<IActionResult> GetReportById(Guid id, CancellationToken cancellationToken)
     {
         var report = await _dbContext.MedicalReports
-            .Include(r => r.LabResults)
+            .Include(r => r.LabResults).ThenInclude(l => l.ValidationIssues)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
 
         if (report == null)
@@ -215,7 +217,7 @@ public class ReportsController : ControllerBase
     [HttpGet("{id:guid}/results")]
     public async Task<IActionResult> GetReportResults(Guid id, CancellationToken cancellationToken)
     {
-        var report = await _dbContext.MedicalReports.Include(r => r.LabResults).FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        var report = await _dbContext.MedicalReports.Include(r => r.LabResults).ThenInclude(l => l.ValidationIssues).FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
         if (report == null)
         {
             return NotFound(new { error = $"Medical report '{id}' was not found." });
@@ -274,10 +276,12 @@ public class ReportsController : ControllerBase
         result.CorrectionReason = request.Reason;
         result.CorrectedAt = now;
         result.CorrectedBy = request.CorrectedBy;
+        foreach (var issue in await _dbContext.ValidationIssues.Where(i => i.LabResultId == result.Id && !i.IsResolved).ToListAsync(cancellationToken)) { issue.IsResolved = true; issue.ResolutionType = "ResolvedByCorrection"; issue.ResolvedAt = now; }
+        result.ReviewRequired = false;
         var value = result.CorrectedValueNumeric ?? result.ValueNumeric;
         var min = result.CorrectedReferenceMin ?? result.ReferenceMin;
         var max = result.CorrectedReferenceMax ?? result.ReferenceMax;
-        result.CalculatedStatus = _rangeClassifier.Classify(value, min, max);
+        result.CalculatedStatus = _rangeClassifier.Classify(value, min, max, result.ReferenceType);
         _dbContext.ResultCorrectionAudits.AddRange(audit);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return Ok(MapResultToDto(result, report));
@@ -309,6 +313,7 @@ public class ReportsController : ControllerBase
             uploadedAt = report.UploadedAt,
             analysedAt = report.AnalysedAt,
             resultsCount = results.Count,
+            validationSummary = new { totalResults = results.Count, autoAccepted = results.Count(r => !r.ReviewRequired), reviewRequired = results.Count(r => r.ReviewRequired), verified = results.Count(r => r.IsVerified), corrected = results.Count(r => r.CorrectedAt.HasValue) },
             results = results.Select(r => MapResultToDto(r, report)).ToList()
         };
     }
@@ -340,6 +345,8 @@ public class ReportsController : ControllerBase
             reviewRequired = result.ReviewRequired,
             ambiguityReason = result.AmbiguityReason,
             flagDiscrepancy = result.FlagDiscrepancy,
+            reviewState = result.IsVerified ? "HUMAN_VERIFIED" : result.CorrectedAt.HasValue ? "HUMAN_CORRECTED" : result.ReviewRequired ? "REVIEW_REQUIRED" : "AUTO_ACCEPTED",
+            validationIssues = result.ValidationIssues.OrderByDescending(i => i.Severity).Select(i => new { id = i.Id, code = i.Code, severity = i.Severity, field = i.FieldName, message = i.Message, requiresReview = i.RequiresReview, isResolved = i.IsResolved, resolutionType = i.ResolutionType, createdAt = i.CreatedAt, resolvedAt = i.ResolvedAt }).ToList(),
             extractedOriginalTestName = result.OriginalTestName,
             extractedValueNumeric = result.ValueNumeric,
             extractedValueText = result.ValueText,

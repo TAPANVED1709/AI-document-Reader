@@ -50,6 +50,7 @@ public static class Stage2SchemaUpgrade
                     foreach (var (name, definition) in correctionColumns)
                         if (!existing.Contains(name))
                             await db.Database.ExecuteSqlRawAsync($"ALTER TABLE LabResults ADD COLUMN {name} {definition}");
+                    await db.Database.ExecuteSqlRawAsync("CREATE TABLE IF NOT EXISTS ValidationIssues (Id TEXT PRIMARY KEY NOT NULL, LabResultId TEXT NOT NULL, Code TEXT NOT NULL, Severity TEXT NOT NULL, FieldName TEXT NULL, Message TEXT NOT NULL, RequiresReview INTEGER NOT NULL DEFAULT 1, IsResolved INTEGER NOT NULL DEFAULT 0, ResolutionType TEXT NULL, CreatedAt TEXT NOT NULL, ResolvedAt TEXT NULL, FOREIGN KEY (LabResultId) REFERENCES LabResults(Id) ON DELETE CASCADE)");
                     await db.Database.ExecuteSqlRawAsync("CREATE TABLE IF NOT EXISTS ResultCorrectionAudits (Id TEXT PRIMARY KEY NOT NULL, LabResultId TEXT NOT NULL, FieldName TEXT NOT NULL, PreviousValue TEXT NULL, NewValue TEXT NULL, Reason TEXT NULL, ChangedAt TEXT NOT NULL, ChangedBy TEXT NULL, FOREIGN KEY (LabResultId) REFERENCES LabResults(Id) ON DELETE CASCADE)");
                 }
             }
@@ -67,6 +68,7 @@ public static class Stage2SchemaUpgrade
                 var sqlType = definition.Replace("REAL", "DECIMAL(18,4)").Replace("TEXT", "NVARCHAR(MAX)");
                 await db.Database.ExecuteSqlRawAsync($"IF COL_LENGTH('LabResults', '{name}') IS NULL ALTER TABLE LabResults ADD {name} {sqlType}");
             }
+            await db.Database.ExecuteSqlRawAsync("IF OBJECT_ID('ValidationIssues', 'U') IS NULL CREATE TABLE ValidationIssues (Id uniqueidentifier NOT NULL PRIMARY KEY, LabResultId uniqueidentifier NOT NULL, Code nvarchar(100) NOT NULL, Severity nvarchar(20) NOT NULL, FieldName nvarchar(100) NULL, Message nvarchar(1000) NOT NULL, RequiresReview bit NOT NULL DEFAULT 1, IsResolved bit NOT NULL DEFAULT 0, ResolutionType nvarchar(50) NULL, CreatedAt datetimeoffset NOT NULL, ResolvedAt datetimeoffset NULL, CONSTRAINT FK_ValidationIssues_LabResults FOREIGN KEY (LabResultId) REFERENCES LabResults(Id) ON DELETE CASCADE)");
             await db.Database.ExecuteSqlRawAsync("IF OBJECT_ID('ResultCorrectionAudits', 'U') IS NULL CREATE TABLE ResultCorrectionAudits (Id uniqueidentifier NOT NULL PRIMARY KEY, LabResultId uniqueidentifier NOT NULL, FieldName nvarchar(100) NOT NULL, PreviousValue nvarchar(500) NULL, NewValue nvarchar(500) NULL, Reason nvarchar(1000) NULL, ChangedAt datetimeoffset NOT NULL, ChangedBy nvarchar(255) NULL, CONSTRAINT FK_ResultCorrectionAudits_LabResults FOREIGN KEY (LabResultId) REFERENCES LabResults(Id) ON DELETE CASCADE)");
         }
     }

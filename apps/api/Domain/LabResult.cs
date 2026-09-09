@@ -40,5 +40,6 @@ public class LabResult
     public string? CorrectionReason { get; set; }
     public DateTimeOffset? CorrectedAt { get; set; }
     public string? CorrectedBy { get; set; }
+    public ICollection<ValidationIssue> ValidationIssues { get; set; } = new List<ValidationIssue>();
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

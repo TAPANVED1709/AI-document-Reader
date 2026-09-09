@@ -1,6 +1,8 @@
 export type Status = 'NORMAL' | 'LOW' | 'HIGH' | 'UNKNOWN';
 export type Filter = 'All' | Status | 'Needs Review' | 'Verified';
 
+export type ValidationIssue = { id?: string; code: string; severity: "INFO" | "WARNING" | "HIGH"; field?: string; message: string; requiresReview: boolean; isResolved?: boolean; resolutionType?: string; };
+
 export type LabResult = {
   id: string;
   normalizedTestName?: string;
@@ -19,6 +21,8 @@ export type LabResult = {
   reviewRequired?: boolean;
   ambiguityReason?: string;
   flagDiscrepancy?: string;
+  reviewState?: "AUTO_ACCEPTED" | "REVIEW_REQUIRED" | "HUMAN_VERIFIED" | "HUMAN_CORRECTED";
+  validationIssues?: ValidationIssue[];
   referenceMin?: number;
   referenceMax?: number;
   referenceText?: string;
@@ -39,4 +43,5 @@ export type Report = {
   pageSources?: { page: number; source: string }[];
   results: LabResult[];
   resultsCount: number;
+  validationSummary?: { totalResults: number; autoAccepted: number; reviewRequired: number; verified: number; corrected: number; };
 };

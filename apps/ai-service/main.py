@@ -15,6 +15,7 @@ from core.extractor import PdfExtractor
 from core.ocr_engine import LocalOcrEngine, is_tesseract_available, get_tesseract_version
 from parsers.base import LabResultItem
 from parsers.lab_parser import LabRowParser
+from validation import ValidationEngine, load_config
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ app.add_middleware(
 
 # Instantiate the active parser (shared between text and OCR paths)
 parser = LabRowParser()
+validator = ValidationEngine(load_config())
 
 # Log Tesseract availability at startup
 if is_tesseract_available():
@@ -70,6 +72,7 @@ class AnalysisResponse(BaseModel):
     ocrApplied: bool
     pages: List[int]
     results: List[LabResultItem]
+    validationSummary: dict
 
 
 # ---------------------------------------------------------------------------
@@ -146,6 +149,11 @@ async def analyse_document(file: UploadFile = File(...)):
             if page.ocr_required:
                 page.source = "OCR_UNAVAILABLE"
 
+    parsed_results = parser.parse([p for p in pages if p.source in ("NATIVE_TEXT", "OCR")])
+    page_sources = {p.page_number: p.source for p in pages}
+    for result in parsed_results: result.sourceType = page_sources.get(result.page)
+    validator.validate(parsed_results)
+    validated_results = parsed_results
     applied = any(p.source == "OCR" for p in pages)
     # Mode describes the required extraction strategy even when OCR is unavailable.
     native = any(not p.ocr_required for p in pages)
@@ -154,7 +162,7 @@ async def analyse_document(file: UploadFile = File(...)):
         requiresOcr=requires_ocr, ocrRequired=requires_ocr, ocrApplied=applied,
         processingMode=mode, pages=[p.page_number for p in pages],
         pageSources=[{"page": p.page_number, "source": p.source, "error": p.error} for p in pages],
-        results=parser.parse([p for p in pages if p.source in ("NATIVE_TEXT", "OCR")]),
+        results=validated_results, validationSummary={"totalResults": len(validated_results), "autoAccepted": sum(not r.reviewRequired for r in validated_results), "reviewRequired": sum(r.reviewRequired for r in validated_results), "verified": 0, "corrected": 0},
     )
 
 

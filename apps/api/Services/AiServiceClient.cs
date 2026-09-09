@@ -3,6 +3,8 @@ using System.Text.Json;
 
 namespace AI.DocumentReader.Api.Services;
 
+public record AiValidationIssueDto(string Code, string Severity, string? Field, string Message, bool RequiresReview = true, string Source = "VALIDATION");
+
 public record AiLabResultDto(
     string OriginalName,
     string? NormalizedName,
@@ -17,7 +19,8 @@ public record AiLabResultDto(
     string? BoundingBoxJson = null,
     string? OriginalUnit = null, string? NormalizedUnit = null, string? ValueOperator = null,
     string ReferenceType = "UNKNOWN", string? ReferenceOperator = null, string? ReportedFlag = null, string? Section = null,
-    string? MethodText = null, bool ReviewRequired = false, string? AmbiguityReason = null, string? Discrepancy = null
+    string? MethodText = null, bool ReviewRequired = false, string? AmbiguityReason = null, string? Discrepancy = null,
+    List<AiValidationIssueDto>? ValidationIssues = null
 );
 
 public record AiPageSourceDto(int Page, string Source, string? Error = null);

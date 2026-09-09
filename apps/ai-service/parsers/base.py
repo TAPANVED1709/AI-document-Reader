@@ -20,8 +20,12 @@ class LabResultItem(BaseModel):
     section: Optional[str] = None
     methodText: Optional[str] = None
     reviewRequired: bool = False
+    reviewState: str = "AUTO_ACCEPTED"
+    calculatedStatus: str = "UNKNOWN"
     ambiguityReason: Optional[str] = None
     discrepancy: Optional[str] = None
+    sourceType: Optional[str] = None
+    validationIssues: list = Field(default_factory=list)
     originalName: str = Field(..., description="Raw test name extracted from document")
     normalizedName: Optional[str] = Field(None, description="Normalized standard test name")
     value: Optional[float] = Field(None, description="Extracted numeric result if convertible")
