@@ -4,9 +4,9 @@ import unicodedata
 
 class UnitNormalizer:
     MAP = {
-        "gm/dl": "g/dL", "g/dl": "g/dL", "g/dl": "g/dL", "mg/dl": "mg/dL", "mg/dl": "mg/dL",
+        "gm/dl": "g/dL", "g/dl": "g/dL", "mg/dl": "mg/dL",
         "mmol/l": "mmol/L", "meq/l": "mEq/L", "iu/l": "IU/L", "u/l": "U/L", "µiu/ml": "µIU/mL", "uiu/ml": "µIU/mL", "miu/l": "mIU/L",
-        "10^3/ul": "10³/µL", "x10^3/ul": "10³/µL", "10³/µl": "10³/µL", "x10³/ul": "10³/µL",
+        "10^3/ul": "10³/µL", "x10^3/ul": "10³/µL", "10³/µl": "10³/µL", "x10³/ul": "10³/µL", "k/ul": "10³/µL", "x10^3/µl": "10³/µL",
         "pg/ml": "pg/mL", "ng/ml": "ng/mL", "µg/dl": "µg/dL", "ug/dl": "µg/dL", "mcg/dl": "µg/dL",
         "%": "%", "mg/l": "mg/L", "ug/l": "µg/L", "fl": "fL", "ml/min": "mL/min", "ratio": "ratio",
     }

@@ -82,6 +82,7 @@ class AnalysisResponse(BaseModel):
     documentTypeConfidence: float = 0.0
     documentTypeSignals: list[str] = []
     structuredData: dict = {}
+    comments: list[str] = []
 
 
 # ---------------------------------------------------------------------------
@@ -196,14 +197,22 @@ async def analyse_document(file: UploadFile = File(...)):
     # Mode describes the required extraction strategy even when OCR is unavailable.
     native = any(not p.ocr_required for p in pages)
     mode = "HYBRID" if requires_ocr and native else "OCR" if requires_ocr else "NATIVE"
+    comments = extract_comments("\n".join(p.text for p in parsed_pages))
     return AnalysisResponse(
         requiresOcr=requires_ocr, ocrRequired=requires_ocr, ocrApplied=applied,
         processingMode=mode, pages=[p.page_number for p in pages],
         pageSources=[{"page": p.page_number, "source": p.source, "error": p.error} for p in pages],
         results=validated_results, validationSummary={"totalResults": len(validated_results), "autoAccepted": sum(not r.reviewRequired for r in validated_results), "reviewRequired": sum(r.reviewRequired for r in validated_results), "verified": 0, "corrected": 0},
         documentType=classification.document_type, documentTypeConfidence=classification.confidence,
-        documentTypeSignals=classification.signals, structuredData=structured_data,
+        documentTypeSignals=classification.signals, structuredData=structured_data, comments=comments,
     )
+
+
+def extract_comments(text: str) -> list[str]:
+    """Keep common laboratory notes separate from result-row parsing."""
+    import re
+    patterns = (r"sample\s+hemolysed", r"repeat\s+advised", r"fasting\s+sample", r"reference\s+range\s+revised")
+    return [line.strip() for line in text.splitlines() if any(re.search(pattern, line, re.I) for pattern in patterns)]
 
 
 if __name__ == "__main__":

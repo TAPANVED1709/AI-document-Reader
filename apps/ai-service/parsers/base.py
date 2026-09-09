@@ -19,6 +19,7 @@ class LabResultItem(BaseModel):
     reportedFlag: Optional[str] = None
     section: Optional[str] = None
     methodText: Optional[str] = None
+    commentText: Optional[str] = None
     reviewRequired: bool = False
     reviewState: str = "AUTO_ACCEPTED"
     calculatedStatus: str = "UNKNOWN"
