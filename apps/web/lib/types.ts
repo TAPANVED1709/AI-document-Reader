@@ -1,3 +1,5 @@
+export type ExplanationResponse = { summary: string; validatedFindings: { test?: string; explanation?: string }[]; requiresVerification: { test?: string; reason?: string }[]; disclaimer: string; provider: string; model: string; promptVersion: string; usedFallback?: boolean; };
+
 export type Status = 'NORMAL' | 'LOW' | 'HIGH' | 'UNKNOWN';
 export type Filter = 'All' | Status | 'Needs Review' | 'Verified';
 

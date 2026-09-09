@@ -1,9 +1,15 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace AI.DocumentReader.Api.Services;
 
 public record AiValidationIssueDto(string Code, string Severity, string? Field, string Message, bool RequiresReview = true, string Source = "VALIDATION");
+
+public record AiStructuredResultDto(string Test, decimal? Value, string ValueText, string? Unit, string? Reference, string Status, string? ReportedFlag, string ReviewState, bool ReviewRequired, List<AiValidationIssueDto> ValidationIssues, string? Section);
+public record AiExplanationRequestDto(string Mode, object Report, List<AiStructuredResultDto> Results);
+public record AiExplanationResponseDto(string Summary, List<Dictionary<string, string>> ValidatedFindings, List<Dictionary<string, string>> RequiresVerification, string Disclaimer, string Provider, string Model, string PromptVersion, bool UsedFallback = false);
+public record AiLocalHealthDto(bool Enabled, string Provider, string Model, bool Available, string? PromptVersion = null);
 
 public record AiLabResultDto(
     string OriginalName,
@@ -38,6 +44,8 @@ public interface IAiServiceClient
 {
     Task<AiAnalysisResponseDto> AnalyseDocumentAsync(string filePath, string originalFileName, CancellationToken cancellationToken = default);
     Task<bool> CheckHealthAsync(CancellationToken cancellationToken = default);
+    Task<AiExplanationResponseDto> GenerateExplanationAsync(AiExplanationRequestDto request, CancellationToken cancellationToken = default);
+    Task<AiLocalHealthDto> LocalHealthAsync(CancellationToken cancellationToken = default);
 }
 
 public class AiServiceClient : IAiServiceClient
@@ -67,6 +75,19 @@ public class AiServiceClient : IAiServiceClient
             _logger.LogWarning(ex, "Health check failed for Python AI service.");
             return false;
         }
+    }
+
+    public async Task<AiExplanationResponseDto> GenerateExplanationAsync(AiExplanationRequestDto request, CancellationToken cancellationToken = default)
+    {
+        using var response = await _httpClient.PostAsJsonAsync("/explain", request, JsonOptions, cancellationToken);
+        if (!response.IsSuccessStatusCode) throw new InvalidOperationException("Local explanation service is unavailable.");
+        return await response.Content.ReadFromJsonAsync<AiExplanationResponseDto>(JsonOptions, cancellationToken) ?? throw new InvalidOperationException("Invalid local explanation response.");
+    }
+
+    public async Task<AiLocalHealthDto> LocalHealthAsync(CancellationToken cancellationToken = default)
+    {
+        try { return await _httpClient.GetFromJsonAsync<AiLocalHealthDto>("/health/local-ai", JsonOptions, cancellationToken) ?? new(false, "unknown", "unknown", false); }
+        catch { return new(false, "unknown", "unknown", false); }
     }
 
     public async Task<AiAnalysisResponseDto> AnalyseDocumentAsync(string filePath, string originalFileName, CancellationToken cancellationToken = default)

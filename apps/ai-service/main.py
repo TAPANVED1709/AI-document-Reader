@@ -5,6 +5,7 @@ Provides PDF text extraction and local OCR fallback for scanned documents.
 All processing is local — no data leaves the machine.
 """
 import logging
+import os
 from typing import List
 
 from fastapi import FastAPI, File, UploadFile, HTTPException, status
@@ -16,6 +17,7 @@ from core.ocr_engine import LocalOcrEngine, is_tesseract_available, get_tesserac
 from parsers.base import LabResultItem
 from parsers.lab_parser import LabRowParser
 from validation import ValidationEngine, load_config
+from explanations import ExplanationRequest, ExplanationResponse, provider_from_config, PROMPT_VERSION
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +92,20 @@ async def health_check():
         tesseractVersion=get_tesseract_version(),
     )
 
+
+@app.get("/health/local-ai")
+async def local_ai_health():
+    provider = os.getenv("LOCAL_LLM_PROVIDER", "ollama")
+    model = os.getenv("LOCAL_LLM_MODEL", "")
+    return {"enabled": True, "provider": provider, "model": model or "deterministic-fallback", "available": bool(model) if provider.lower() == "ollama" else True, "promptVersion": PROMPT_VERSION}
+
+@app.post("/explain", response_model=ExplanationResponse)
+async def explain_structured(request: ExplanationRequest):
+    fallback = provider_from_config()
+    if getattr(fallback, "provider", "") == "ollama":
+        try: return await fallback.generate(request)
+        except Exception: pass
+    return await __import__("explanations.provider", fromlist=["DeterministicFallbackProvider"]).DeterministicFallbackProvider().generate(request)
 
 @app.post("/analyse", response_model=AnalysisResponse)
 async def analyse_document(file: UploadFile = File(...)):

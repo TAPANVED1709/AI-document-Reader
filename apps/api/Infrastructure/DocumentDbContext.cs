@@ -14,6 +14,7 @@ public class DocumentDbContext : DbContext
     public DbSet<AnalysisRun> AnalysisRuns => Set<AnalysisRun>();
     public DbSet<ResultCorrectionAudit> ResultCorrectionAudits => Set<ResultCorrectionAudit>();
     public DbSet<ValidationIssue> ValidationIssues => Set<ValidationIssue>();
+    public DbSet<ExplanationRecord> ExplanationRecords => Set<ExplanationRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,6 +77,18 @@ public class DocumentDbContext : DbContext
 
             entity.HasIndex(e => e.MedicalReportId);
             entity.HasIndex(e => e.CalculatedStatus);
+        });
+
+        modelBuilder.Entity<ExplanationRecord>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Mode).IsRequired().HasMaxLength(40);
+            entity.Property(e => e.Provider).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Model).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.PromptVersion).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.GeneratedText).IsRequired();
+            entity.Property(e => e.GeneratedJson).IsRequired();
+            entity.HasIndex(e => e.MedicalReportId);
         });
 
         modelBuilder.Entity<ValidationIssue>(entity =>
