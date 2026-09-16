@@ -21,7 +21,7 @@ public class TimelineController : ControllerBase
     {
         var userId = Guid.TryParse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier), out var uid) ? uid : Guid.Empty;
         var organizationId = Guid.TryParse(User.FindFirstValue("organization_id"), out var oid) ? oid : Guid.Empty;
-        var reports = await _db.MedicalReports.AsNoTracking().Include(r => r.LabResults).Where(r => (r.UploadedByUserId == userId || r.PatientUserId == userId || r.OrganizationId == organizationId && organizationId != Guid.Empty) && (!year.HasValue || (r.ReportDate ?? r.UploadedAt).Year == year) && (!month.HasValue || (r.ReportDate ?? r.UploadedAt).Month == month)).ToListAsync(ct);
+        var reports = await _db.MedicalReports.AsNoTracking().Include(r => r.LabResults).Where(r => (User.IsInRole("PATIENT") ? r.PatientUserId == userId : (r.UploadedByUserId == userId || r.OrganizationId == organizationId && organizationId != Guid.Empty)) && (!year.HasValue || (r.ReportDate ?? r.UploadedAt).Year == year) && (!month.HasValue || (r.ReportDate ?? r.UploadedAt).Month == month)).ToListAsync(ct);
         var events = reports.Where(r => section is null && testName is null && reviewState is null || r.LabResults.Any(x => Matches(x, section, testName, reviewState))).Select(r => new { Report = r, Date = r.ReportDate ?? r.UploadedAt }).OrderByDescending(x => x.Date).Select(x => Event(x.Report, section, testName, reviewState)).ToList();
         return Ok(events);
     }

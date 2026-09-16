@@ -33,6 +33,7 @@ public class MedicalResourceAuthorizationService : IMedicalResourceAuthorization
     {
         if (user.IsInRole("ADMIN")) return false; // system admin does not bypass clinical ownership
         var userId = ClaimId(user, ClaimTypes.NameIdentifier);
+        if (user.IsInRole("PATIENT")) return userId.HasValue && report.PatientUserId == userId;
         var organizationId = ClaimId(user, "organization_id");
         if (report.UploadedByUserId == userId || report.PatientUserId == userId || report.OrganizationId == organizationId && organizationId.HasValue) return true;
         var grants = _db.PatientAccessGrants.AsNoTracking()

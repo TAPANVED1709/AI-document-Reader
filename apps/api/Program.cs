@@ -142,6 +142,7 @@ using (var scope = app.Services.CreateScope())
     // The primary outbox is part of canonical persistence. Do not accept uploads with a missing ledger schema.
     // This never connects to the secondary database; its outage must not affect startup or canonical processing.
     await MedicalReportExportSchema.ApplyAsync(dbContext);
+    await PatientHistorySchema.ApplyAsync(dbContext);
 }
 
 if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("MedicalSoftwareExport:InitializeDevelopmentDatabase"))

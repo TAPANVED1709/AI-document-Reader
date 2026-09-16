@@ -281,7 +281,6 @@ public class ReportsController : ControllerBase
         {
             id = report.Id,
             originalFileName = report.OriginalFileName,
-            storedFileName = report.StoredFileName,
             fileSize = report.FileSize,
             status = report.Status.ToString(),
             requiresOcr = report.OcrRequired,
@@ -304,7 +303,7 @@ public class ReportsController : ControllerBase
         };
     }
 
-    private static object MapResultToDto(LabResult result, MedicalReport? report = null)
+    internal static object MapResultToDto(LabResult result, MedicalReport? report = null)
     {
         var pageSource = report?.PageSourcesJson is null ? null : System.Text.Json.JsonSerializer.Deserialize<List<AiPageSourceDto>>(report.PageSourcesJson)
             ?.FirstOrDefault(p => p.Page == result.PageNumber)?.Source;

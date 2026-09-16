@@ -88,6 +88,7 @@ public class DocumentDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(e => e.UploadedAt);
+            entity.HasIndex(e => e.PatientUserId);
             entity.HasIndex(e => e.Status);
         });
 

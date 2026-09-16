@@ -3,6 +3,7 @@
 import { groupPathologyResults, PATHOLOGY_PANELS } from '../lib/panels';
 
 import { useEffect, useMemo, useState } from 'react';
+import PatientRecords from '../components/PatientRecords';
 import UploadZone from '../components/UploadZone';
 import PdfViewer from '../components/PdfViewer';
 import SafetyNotice from '../components/SafetyNotice';
@@ -22,6 +23,7 @@ export default function Home() {
   const select = (result: LabResult) => { setSelected(result); setPage(result.pageNumber); };
   const verify = async (result: LabResult) => { if (!report) return; await verifyResult(report.id, result.id); setReport({ ...report, results: report.results.map(r => r.id === result.id ? { ...r, isVerified: true } : r) }); };
   const correct = async (result: LabResult, payload: Record<string, unknown>) => { if (!report) return; const updated = await correctResult(report.id, result.id, payload); setReport({ ...report, results: report.results.map(r => r.id === result.id ? updated : r) }); setSelected(updated); };
+  if (user?.role === 'PATIENT') return <PatientRecords key={user.id} user={user} onLogout={() => { setUser(null); setReport(null); }} />;
   return <main className="min-h-screen"><header className="border-b border-line bg-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-teal">Private document workspace</p><h1 className="mt-1 text-2xl font-bold text-ink">AI Document Reader</h1></div><div className="flex items-center gap-3"><span className="rounded-full bg-[#e8f5f3] px-3 py-1 text-xs font-semibold text-[#126b72]">Local processing</span>{user && <button onClick={async () => { await logout(); setUser(null); }} className="text-xs font-bold">Log out</button>}</div></div></header><div className="mx-auto max-w-7xl px-6 py-8"><div className="mb-8"><h2 className="text-3xl font-bold tracking-tight">Review your laboratory report</h2><p className="mt-2 text-slate-600">Upload a laboratory report to extract and review its results.</p></div>{!report ? <><AuthPanel user={user} onLogin={setUser} />{user && ['LAB_STAFF', 'PATHOLOGIST'].includes(user.role) && <ReviewQueuePanel /> }<TimelinePanel /><UploadZone onUpload={process} />{error && <p role="alert" className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}</> : <Workspace report={report} selected={selected} page={page} setPage={setPage} select={select} filtered={filtered} filter={filter} setFilter={setFilter} query={query} setQuery={setQuery} verify={verify} correct={correct} />}</div><div className="mx-auto max-w-7xl px-6"><SafetyNotice /></div></main>;
 }
 

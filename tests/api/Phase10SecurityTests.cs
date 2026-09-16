@@ -57,10 +57,13 @@ public class Phase10SecurityTests
     }
 
     [Fact]
-    public async Task Active_grant_allows_access_but_expired_and_revoked_grants_do_not()
+    public async Task Active_professional_grant_allows_access_but_patient_expired_and_revoked_grants_do_not()
     {
         var (db, patient, other, report) = Fixture(); var auth = new MedicalResourceAuthorizationService(db);
         db.PatientAccessGrants.Add(new PatientAccessGrant { PatientId = patient.Id, GrantedToUserId = other.Id, GrantedByUserId = patient.Id }); await db.SaveChangesAsync();
+        // Phase 15B requires strict ownership for PATIENT even when a legacy grant exists.
+        Assert.False(await auth.CanViewReportAsync(User(other), report.Id));
+        other.Role = "PATHOLOGIST";
         Assert.True(await auth.CanViewReportAsync(User(other), report.Id));
         var grant = await db.PatientAccessGrants.SingleAsync(); grant.ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(-1); await db.SaveChangesAsync(); Assert.False(await auth.CanViewReportAsync(User(other), report.Id));
         grant.ExpiresAt = null; grant.RevokedAt = DateTimeOffset.UtcNow; await db.SaveChangesAsync(); Assert.False(await auth.CanViewReportAsync(User(other), report.Id));

@@ -19,7 +19,16 @@ public class TrendsController : ControllerBase
     public record CompareRequest(List<Guid> ReportIds, string? TestName = null, DateTimeOffset? FromDate = null, DateTimeOffset? ToDate = null);
 
     [HttpGet("tests")]
-    public async Task<IActionResult> Tests(CancellationToken ct) => Ok(await _db.LabResults.AsNoTracking().Where(r => r.NormalizedTestName != null).Select(r => r.NormalizedTestName!).Distinct().OrderBy(x => x).ToListAsync(ct));
+    public async Task<IActionResult> Tests(CancellationToken ct)
+    {
+        var query = _db.LabResults.AsNoTracking().Where(r => r.NormalizedTestName != null);
+        if (User.IsInRole("PATIENT"))
+        {
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var patientId)) return Unauthorized();
+            query = query.Where(r => r.MedicalReport!.PatientUserId == patientId);
+        }
+        return Ok(await query.Select(r => r.NormalizedTestName!).Distinct().OrderBy(x => x).ToListAsync(ct));
+    }
 
     [HttpGet("{normalizedTestName}")]
     public Task<IActionResult> Get(string normalizedTestName, CancellationToken ct) => Compare(new CompareRequest(new List<Guid>(), normalizedTestName), ct);
