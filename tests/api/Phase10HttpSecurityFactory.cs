@@ -76,9 +76,12 @@ public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
         if (disposing)
         {
             _connection.Dispose();
-            var file = Path.Combine(_files, "synthetic.pdf");
-            if (File.Exists(file)) File.Delete(file);
-            if (Directory.Exists(_files)) Directory.Delete(_files);
+            if (Directory.Exists(_files))
+            {
+                // This factory owns its unique temporary directory, including files created by upload tests.
+                foreach (var file in Directory.EnumerateFiles(_files)) File.Delete(file);
+                Directory.Delete(_files);
+            }
         }
     }
 }

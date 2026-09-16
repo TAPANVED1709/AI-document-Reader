@@ -8,6 +8,32 @@ beforeEach(() => { vi.resetModules(); fetchMock = vi.fn(); vi.stubGlobal('fetch'
 afterEach(() => vi.unstubAllGlobals());
 
 describe('existing antiforgery token lifecycle', () => {
+  it('routes patient uploads separately without supplying an owner or multipart content type', async () => {
+    fetchMock.mockResolvedValueOnce(response({ token: 'patient' })).mockResolvedValueOnce(response({ status: 'QUEUED' }, 202));
+    const api = await import('./api');
+    await api.uploadReport(file(), true);
+    expect(String(fetchMock.mock.calls[1][0])).toMatch(/\/api\/reports\/self-upload$/);
+    const request = fetchMock.mock.calls[1][1];
+    expect(Array.from(request.body.keys())).toEqual(['file']);
+    expect(request.headers.has('Content-Type')).toBe(false);
+    expect(request.headers.get('X-XSRF-TOKEN')).toBe('patient');
+    expect(request.credentials).toBe('include');
+  });
+
+  it('restores the existing patient session on page load', async () => {
+    fetchMock.mockResolvedValueOnce(response({ id: 'patient', role: 'PATIENT' }));
+    const api = await import('./api');
+    await expect(api.getCurrentUser()).resolves.toMatchObject({ role: 'PATIENT' });
+    expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/api\/auth\/me$/);
+    expect(fetchMock.mock.calls[0][1].credentials).toBe('include');
+  });
+
+  it('polls the patient-owned status route without exposing staff queues', async () => {
+    fetchMock.mockResolvedValueOnce(response({ status: 'COMPLETED' }));
+    const api = await import('./api');
+    await expect(api.getProcessingStatus('owned-report', true)).resolves.toMatchObject({ status: 'COMPLETED' });
+    expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/owned-report\/self-processing-status$/);
+  });
   it('uses anonymous issuance for login then reacquires for authenticated multipart upload', async () => {
     fetchMock.mockResolvedValueOnce(response({ token: 'anonymous' })).mockResolvedValueOnce(response({ role: 'LAB_STAFF' }))
       .mockResolvedValueOnce(response({ token: 'authenticated' })).mockResolvedValueOnce(response({ jobId: 'job', status: 'QUEUED' }, 202));

@@ -29,6 +29,7 @@ builder.Services.AddAuthentication("AppCookie").AddCookie("AppCookie", options =
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
     options.SlidingExpiration = true;
     options.Events.OnRedirectToLogin = context => { context.Response.StatusCode = StatusCodes.Status401Unauthorized; return Task.CompletedTask; };
+    options.Events.OnRedirectToAccessDenied = context => { context.Response.StatusCode = StatusCodes.Status403Forbidden; return Task.CompletedTask; };
 });
 builder.Services.AddAuthorization();
 builder.Services.AddAntiforgery(options => { options.HeaderName = "X-XSRF-TOKEN"; options.Cookie.Name = "ai_document_reader_csrf"; options.Cookie.HttpOnly = false; options.Cookie.SameSite = SameSiteMode.Lax; });
@@ -65,6 +66,15 @@ builder.Services.AddDbContext<DocumentDbContext>(options =>
 });
 
 // 4. Register Application Services
+builder.Services.AddDbContext<MedicalSoftwareDbContext>(options =>
+{
+    // No execution-strategy retries: repeating an INSERT after an uncertain COMMIT can duplicate external rows.
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MedicalSoftware"), sql => sql.CommandTimeout(30));
+    options.UseLoggerFactory(Microsoft.Extensions.Logging.Abstractions.NullLoggerFactory.Instance);
+});
+builder.Services.AddScoped<IMedicalSoftwareWriter, MedicalSoftwareWriter>();
+builder.Services.AddScoped<MedicalReportExportService>();
+builder.Services.AddHostedService<MedicalReportExportWorker>();
 builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
 builder.Services.AddSingleton<IReferenceRangeClassifier, ReferenceRangeClassifier>();
 builder.Services.AddScoped<IMedicalResourceAuthorizationService, MedicalResourceAuthorizationService>();
@@ -128,6 +138,21 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogWarning(ex, "Could not initialize primary database provider. Will attempt SQLite fallback if SQL Server is not reachable.");
+    }
+    // The primary outbox is part of canonical persistence. Do not accept uploads with a missing ledger schema.
+    // This never connects to the secondary database; its outage must not affect startup or canonical processing.
+    await MedicalReportExportSchema.ApplyAsync(dbContext);
+}
+
+if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("MedicalSoftwareExport:InitializeDevelopmentDatabase"))
+{
+    try
+    {
+        await MedicalSoftwareSchema.InitializeDevelopmentAsync(builder.Configuration.GetConnectionString("MedicalSoftware") ?? "");
+    }
+    catch
+    {
+        app.Logger.LogWarning("Development secondary database initialization failed; primary processing remains available.");
     }
 }
 

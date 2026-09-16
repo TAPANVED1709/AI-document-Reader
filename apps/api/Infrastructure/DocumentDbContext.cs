@@ -22,10 +22,22 @@ public class DocumentDbContext : DbContext
     public DbSet<PatientAccessGrant> PatientAccessGrants => Set<PatientAccessGrant>();
     public DbSet<ProcessingJob> ProcessingJobs => Set<ProcessingJob>();
     public DbSet<IngestionIdempotencyRecord> IngestionIdempotencyRecords => Set<IngestionIdempotencyRecord>();
+    public DbSet<MedicalReportExport> MedicalReportExports => Set<MedicalReportExport>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<MedicalReportExport>(entity =>
+        {
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Destination).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(30).IsRequired();
+            entity.Property(x => x.LastErrorCode).HasMaxLength(80);
+            entity.Property(x => x.LastErrorSafeMessage).HasMaxLength(500);
+            entity.HasIndex(x => new { x.MedicalReportId, x.Destination }).IsUnique();
+            entity.HasOne(x => x.Report).WithMany().HasForeignKey(x => x.MedicalReportId).OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<ApplicationUser>().HasKey(x => x.Id);
         modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.Email).IsUnique();

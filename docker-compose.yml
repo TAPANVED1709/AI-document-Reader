@@ -28,6 +28,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: ${ConnectionStrings__DefaultConnection:?Set a SQL Server connection string}
+      ConnectionStrings__MedicalSoftware: ${ConnectionStrings__MedicalSoftware:-}
+      MedicalSoftwareExport__Enabled: ${MEDICAL_SOFTWARE_EXPORT_ENABLED:-false}
       Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:3001}
       AiService__BaseUrl: http://ai-service:8000
       Storage__RootPath: /var/lib/ai-document-reader/reports

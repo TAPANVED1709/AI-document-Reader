@@ -59,7 +59,22 @@ public class ReportsController : ControllerBase
     [EnableRateLimiting("upload")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(20 * 1024 * 1024)] // 20 MB limit
-    public async Task<IActionResult> UploadReport(IFormFile file, CancellationToken cancellationToken)
+    public Task<IActionResult> UploadReport(IFormFile file, CancellationToken cancellationToken)
+        => QueueReportAsync(file, null, cancellationToken);
+
+    [HttpPost("self-upload")]
+    [Authorize(Roles = "PATIENT")]
+    [EnableRateLimiting("upload")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(20 * 1024 * 1024)]
+    public Task<IActionResult> SelfUploadReport(IFormFile file, CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var patientId))
+            return Task.FromResult<IActionResult>(Unauthorized());
+        return QueueReportAsync(file, patientId, cancellationToken);
+    }
+
+    private async Task<IActionResult> QueueReportAsync(IFormFile file, Guid? patientId, CancellationToken cancellationToken)
     {
         try
         {
@@ -92,6 +107,7 @@ public class ReportsController : ControllerBase
             ContentType = file.ContentType,
             FileSize = file.Length,
             Status = ReportStatus.Processing,
+            PatientUserId = patientId,
             UploadedAt = DateTimeOffset.UtcNow
             ,UploadedByUserId = Guid.TryParse((User ?? new ClaimsPrincipal()).FindFirstValue(ClaimTypes.NameIdentifier), out var uploader) ? uploader : null
             ,OrganizationId = Guid.TryParse((User ?? new ClaimsPrincipal()).FindFirstValue("organization_id"), out var organization) ? organization : null
@@ -161,6 +177,18 @@ public class ReportsController : ControllerBase
         if (report is null) return NotFound(new { error = "Medical report was not found." });
         await Audit("REPORT_VIEW", "MedicalReport", id, true, cancellationToken);
         return Ok(MedicalReportSummaryMapper.Map(report));
+    }
+
+    [HttpGet("{id:guid}/self-processing-status")]
+    [Authorize(Roles = "PATIENT")]
+    public async Task<IActionResult> SelfProcessingStatus(Guid id, CancellationToken ct)
+    {
+        if (!await _authorization.CanViewReportAsync(User, id, ct)) return NotFound(new { error = "Medical report was not found." });
+        var job = await _dbContext.ProcessingJobs.AsNoTracking().SingleOrDefaultAsync(x => x.ReportId == id, ct);
+        if (job is null) return NotFound(new { error = "Processing job was not found." });
+        await Audit("REPORT_PROCESSING_VIEW", "MedicalReport", id, true, ct);
+        return Ok(new { reportId = id, jobId = job.Id, status = job.Status.ToString(), attemptCount = job.AttemptCount,
+            createdAt = job.CreatedAt, startedAt = job.StartedAt, completedAt = job.CompletedAt, safeErrorCode = job.LastErrorCode });
     }
 
     [HttpGet("{id:guid}/file")]

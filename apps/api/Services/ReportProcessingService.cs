@@ -89,6 +89,14 @@ public sealed class ReportProcessingService : IReportProcessingService
             job.NextRetryAt = null;
             job.LastErrorCode = ocrUnavailable ? "OCR_UNAVAILABLE" : null;
             job.LastErrorSafeMessage = ocrUnavailable ? "OCR was required but unavailable; verify the source report." : null;
+            // Outbox intent is committed with the canonical rows. Only the independent export worker contacts the second database.
+            if (!await _db.MedicalReportExports.AnyAsync(x => x.MedicalReportId == report.Id && x.Destination == MedicalReportExport.SelfUploadedDestination, cancellationToken))
+                _db.MedicalReportExports.Add(new MedicalReportExport
+                {
+                    MedicalReportId = report.Id,
+                    Status = MedicalReportExportService.Enabled(_configuration) && response.DocumentType == "LAB_REPORT" && !ocrUnavailable && existing.Count > 0
+                        ? MedicalReportExportStatus.PENDING : MedicalReportExportStatus.NOT_REQUIRED
+                });
             savingResults = true;
             await _db.SaveChangesAsync(cancellationToken);
             savingResults = false;
@@ -105,6 +113,8 @@ public sealed class ReportProcessingService : IReportProcessingService
             foreach (var entry in _db.ChangeTracker.Entries<ValidationIssue>().Where(x => x.State == EntityState.Added).ToList())
                 entry.State = EntityState.Detached;
             foreach (var entry in _db.ChangeTracker.Entries<LabResult>().Where(x => x.State == EntityState.Added).ToList())
+                entry.State = EntityState.Detached;
+            foreach (var entry in _db.ChangeTracker.Entries<MedicalReportExport>().Where(x => x.State == EntityState.Added).ToList())
                 entry.State = EntityState.Detached;
             run.Status = AnalysisStatus.Failed; run.CompletedAt = DateTimeOffset.UtcNow;
             var persistenceFailure = savingResults || ex is DbUpdateException || ex is System.Data.Common.DbException;

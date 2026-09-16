@@ -2,13 +2,13 @@
 
 import { groupPathologyResults, PATHOLOGY_PANELS } from '../lib/panels';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import UploadZone from '../components/UploadZone';
 import PdfViewer from '../components/PdfViewer';
 import SafetyNotice from '../components/SafetyNotice';
 import ResultStatus from '../components/ResultStatus';
 import ReportHeader from '../components/ReportHeader';
-import { compareTrend, correctResult, explainReport, explainResult, getLatestResults, getTimeline, getReviewQueue, getReport, getProcessingStatus, login, logout, uploadReport, verifyResult } from '../lib/api';
+import { compareTrend, correctResult, explainReport, explainResult, getLatestResults, getTimeline, getReviewQueue, getReport, getProcessingStatus, getCurrentUser, login, logout, uploadReport, verifyResult } from '../lib/api';
 import { confidenceNeedsReview } from '../lib/confidence';
 import { displayValue, modeLabel, statusIcon } from '../lib/formatters';
 import { filterResults } from '../lib/results';
@@ -16,7 +16,8 @@ import type { CurrentUser, ExplanationResponse, Filter, LabResult, Report, Timel
 
 export default function Home() {
   const [report, setReport] = useState<Report | null>(null); const [user, setUser] = useState<CurrentUser | null>(null); const [selected, setSelected] = useState<LabResult | null>(null); const [page, setPage] = useState(1); const [filter, setFilter] = useState<Filter>('All'); const [query, setQuery] = useState(''); const [error, setError] = useState('');
-  const process = async (file: File) => { try { setError(''); const queued = await uploadReport(file); if ('jobId' in queued) { for (let attempt = 0; attempt < 150; attempt++) { const status = await getProcessingStatus(queued.reportId); if (status.status === 'FAILED') throw new Error(status.safeErrorCode || 'The report could not be processed.'); if (['COMPLETED', 'REVIEW_REQUIRED'].includes(status.status)) { setReport(await getReport(queued.reportId)); return; } await new Promise(resolve => setTimeout(resolve, 2000)); } throw new Error('Processing timed out.'); } setReport(queued); } catch (e) { setError(e instanceof Error ? e.message : 'The document service is unavailable.'); throw e; } };
+  useEffect(() => { let active = true; getCurrentUser().then(current => { if (active) setUser(current); }).catch(() => { /* Login remains available if session lookup fails. */ }); return () => { active = false; }; }, []);
+  const process = async (file: File) => { try { setError(''); const queued = await uploadReport(file, user?.role === 'PATIENT'); if ('jobId' in queued) { for (let attempt = 0; attempt < 150; attempt++) { const status = await getProcessingStatus(queued.reportId, user?.role === 'PATIENT'); if (status.status === 'FAILED') throw new Error(status.safeErrorCode || 'The report could not be processed.'); if (['COMPLETED', 'REVIEW_REQUIRED'].includes(status.status)) { setReport(await getReport(queued.reportId)); return; } await new Promise(resolve => setTimeout(resolve, 2000)); } throw new Error('Processing timed out.'); } setReport(queued); } catch (e) { setError(e instanceof Error ? e.message : 'The document service is unavailable.'); throw e; } };
   const filtered = useMemo(() => filterResults(report?.results || [], filter, query), [report, filter, query]);
   const select = (result: LabResult) => { setSelected(result); setPage(result.pageNumber); };
   const verify = async (result: LabResult) => { if (!report) return; await verifyResult(report.id, result.id); setReport({ ...report, results: report.results.map(r => r.id === result.id ? { ...r, isVerified: true } : r) }); };
