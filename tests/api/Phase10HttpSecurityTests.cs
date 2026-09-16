@@ -84,8 +84,8 @@ public class Phase10HttpSecurityTests : IClassFixture<Phase10HttpSecurityFactory
     [Fact]
     public async Task Real_http_z_cors_rate_limit_and_cookie_headers_are_enforced()
     {
-        var client = _factory.CreateClient(); using var allowed = new HttpRequestMessage(HttpMethod.Get, "/health"); allowed.Headers.Add("Origin", "http://localhost:3000"); var cors = await client.SendAsync(allowed);
-        Assert.Equal("http://localhost:3000", cors.Headers.GetValues("Access-Control-Allow-Origin").Single()); Assert.Equal("true", cors.Headers.GetValues("Access-Control-Allow-Credentials").Single());
+        var client = _factory.CreateClient(); using var allowed = new HttpRequestMessage(HttpMethod.Get, "/health"); allowed.Headers.Add("Origin", "http://localhost:3001"); var cors = await client.SendAsync(allowed);
+        Assert.Equal("http://localhost:3001", cors.Headers.GetValues("Access-Control-Allow-Origin").Single()); Assert.Equal("true", cors.Headers.GetValues("Access-Control-Allow-Credentials").Single());
         using var denied = new HttpRequestMessage(HttpMethod.Get, "/health"); denied.Headers.Add("Origin", "https://evil.example"); Assert.False((await client.SendAsync(denied)).Headers.Contains("Access-Control-Allow-Origin"));
         var (authenticated, user) = await _factory.LoginAsync("patient-a@test");
         using var resourceScope = _factory.Services.CreateScope(); var other = resourceScope.ServiceProvider.GetRequiredService<DocumentDbContext>().MedicalReports.First(x => x.PatientUserId != user.Id && x.PatientUserId.HasValue).Id;
@@ -95,4 +95,37 @@ public class Phase10HttpSecurityTests : IClassFixture<Phase10HttpSecurityFactory
     }
 
     private static async Task<string> GetToken(HttpClient client) => (await client.GetFromJsonAsync<Phase10HttpSecurityFactory.CsrfResponse>("/api/auth/csrf"))!.Token;
+
+    [Fact]
+    public async Task Antiforgery_tokens_must_be_reissued_after_login_and_logout()
+    {
+        using var client = _factory.CreateClient();
+        var anonymousToken = await GetToken(client);
+        client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", anonymousToken);
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync("/api/auth/login", new { email = "lab-a@test", password = "StrongPassword123!" })).StatusCode);
+        var stale = await client.PostAsync("/api/auth/logout", null);
+        Assert.Equal(HttpStatusCode.BadRequest, stale.StatusCode);
+        Assert.Contains("A valid CSRF token is required.", await stale.Content.ReadAsStringAsync());
+
+        client.DefaultRequestHeaders.Remove("X-XSRF-TOKEN");
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/api/auth/logout", null)).StatusCode);
+        client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", "invalid");
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsync("/api/auth/logout", null)).StatusCode);
+        client.DefaultRequestHeaders.Remove("X-XSRF-TOKEN");
+        client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", await GetToken(client));
+        Assert.Equal(HttpStatusCode.NoContent, (await client.PostAsync("/api/auth/logout", null)).StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, (await client.PostAsJsonAsync("/api/auth/login", new { email = "lab-a@test", password = "StrongPassword123!" })).StatusCode);
+        client.DefaultRequestHeaders.Remove("X-XSRF-TOKEN");
+        client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", await GetToken(client));
+        Assert.Equal(HttpStatusCode.OK, (await client.PostAsJsonAsync("/api/auth/login", new { email = "lab-a@test", password = "StrongPassword123!" })).StatusCode);
+    }
+
+    [Fact]
+    public async Task Anonymous_upload_still_requires_authentication_with_valid_csrf()
+    {
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-XSRF-TOKEN", await GetToken(client));
+        using var form = new MultipartFormDataContent();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsync("/api/reports/upload", form)).StatusCode);
+    }
 }

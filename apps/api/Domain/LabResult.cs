@@ -23,6 +23,9 @@ public class LabResult
     public string? SectionName { get; set; }
     public string? MethodText { get; set; }
     public bool ReviewRequired { get; set; }
+    public string? DemographicQualifier { get; set; }
+    public string ApplicabilityStatus { get; set; } = "NOT_REQUIRED";
+    public string? ApplicabilityReason { get; set; }
     public string? AmbiguityReason { get; set; }
     public string? FlagDiscrepancy { get; set; }
     public ResultStatus CalculatedStatus { get; set; } = ResultStatus.UNKNOWN;

@@ -31,7 +31,10 @@ public static class Stage2SchemaUpgrade
             ["OriginalUnit"] = "TEXT NULL", ["NormalizedUnit"] = "TEXT NULL", ["ValueOperator"] = "TEXT NULL",
             ["ReferenceType"] = "TEXT NOT NULL DEFAULT 'UNKNOWN'", ["ReferenceOperator"] = "TEXT NULL", ["ReportedFlag"] = "TEXT NULL",
             ["SectionName"] = "TEXT NULL", ["MethodText"] = "TEXT NULL", ["ReviewRequired"] = "INTEGER NOT NULL DEFAULT 0",
-            ["AmbiguityReason"] = "TEXT NULL", ["FlagDiscrepancy"] = "TEXT NULL"
+            ["AmbiguityReason"] = "TEXT NULL", ["FlagDiscrepancy"] = "TEXT NULL",
+            ["DemographicQualifier"] = "nvarchar(40) NULL",
+            ["ApplicabilityStatus"] = "nvarchar(40) NOT NULL DEFAULT 'NOT_REQUIRED'",
+            ["ApplicabilityReason"] = "nvarchar(255) NULL"
         };
         if (db.Database.IsSqlite())
         {

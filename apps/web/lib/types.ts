@@ -22,6 +22,9 @@ export type LabResult = {
   sectionName?: string;
   methodText?: string;
   reviewRequired?: boolean;
+  demographicQualifier?: string | null;
+  applicabilityStatus?: 'APPLICABLE' | 'NOT_APPLICABLE' | 'REVIEW_REQUIRED' | 'NOT_REQUIRED';
+  applicabilityReason?: string | null;
   ambiguityReason?: string;
   flagDiscrepancy?: string;
   reviewState?: "AUTO_ACCEPTED" | "REVIEW_REQUIRED" | "HUMAN_VERIFIED" | "HUMAN_CORRECTED";

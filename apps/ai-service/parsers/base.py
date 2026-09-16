@@ -21,6 +21,10 @@ class LabResultItem(BaseModel):
     methodText: Optional[str] = None
     commentText: Optional[str] = None
     reviewRequired: bool = False
+    demographicQualifier: Optional[str] = None
+    applicabilityStatus: str = "NOT_REQUIRED"
+    applicabilityReason: Optional[str] = None
+    secondaryRangePlaceholder: bool = False
     reviewState: str = "AUTO_ACCEPTED"
     calculatedStatus: str = "UNKNOWN"
     ambiguityReason: Optional[str] = None

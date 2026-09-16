@@ -15,6 +15,7 @@ from core.extractor import PdfExtractor
 from core.ocr_engine import LocalOcrEngine, is_tesseract_available, get_tesseract_version
 from parsers.base import LabResultItem
 from parsers.lab_parser import LabRowParser
+from parsers.pathology_metadata import parse_pathology_metadata
 from validation import ValidationEngine, load_config
 from explanations import ExplanationRequest, ExplanationResponse, provider_from_config, PROMPT_VERSION
 from trends import TrendRequest, build_trend, summarize_trend
@@ -201,6 +202,8 @@ async def analyse_document(file: UploadFile = File(...)):
     elif classification.document_type == "RADIOLOGY_REPORT":
         structured_data = parse_radiology("\n".join(p.text for p in parsed_pages))
     parsed_results = parser.parse(parsed_pages) if classification.document_type == "LAB_REPORT" else []
+    if classification.document_type == "LAB_REPORT":
+        structured_data = parse_pathology_metadata(parsed_pages, (r.section for r in parsed_results), len(pages))
     page_sources = {p.page_number: p.source for p in pages}
     for result in parsed_results: result.sourceType = page_sources.get(result.page)
     validator.validate(parsed_results)

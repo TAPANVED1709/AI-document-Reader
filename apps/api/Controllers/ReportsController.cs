@@ -152,13 +152,26 @@ public class ReportsController : ControllerBase
             .Select(r => MapResultToDto(r, report)).ToList());
     }
 
+    [HttpGet("{id:guid}/summary")]
+    public async Task<IActionResult> GetReportSummary(Guid id, CancellationToken cancellationToken)
+    {
+        if (!await _authorization.CanViewReportAsync(User, id, cancellationToken))
+        { await Audit("ACCESS_DENIED", "MedicalReport", id, false, cancellationToken); return NotFound(new { error = "Medical report was not found." }); }
+        var report = await _dbContext.MedicalReports.AsNoTracking().Include(r => r.LabResults).FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+        if (report is null) return NotFound(new { error = "Medical report was not found." });
+        await Audit("REPORT_VIEW", "MedicalReport", id, true, cancellationToken);
+        return Ok(MedicalReportSummaryMapper.Map(report));
+    }
+
     [HttpGet("{id:guid}/file")]
     public IActionResult GetReportFile(Guid id)
     {
         if (_enforceAuthorization && !_authorization.CanViewReportAsync(User, id).GetAwaiter().GetResult()) { Audit("ACCESS_DENIED", "PDF", id, false, default).GetAwaiter().GetResult(); return NotFound(new { error = "Report file was not found." }); }
         var report = _dbContext.MedicalReports.AsNoTracking().FirstOrDefault(r => r.Id == id);
         if (report == null || !_storageService.FileExists(report.StoredFileName)) return NotFound(new { error = "Report file was not found." });
-        Audit("PDF_VIEW", "PDF", id, true, default).GetAwaiter().GetResult(); return PhysicalFile(_storageService.GetReportAbsolutePath(report.StoredFileName), "application/pdf", report.OriginalFileName, enableRangeProcessing: true);
+        Audit("PDF_VIEW", "PDF", id, true, default).GetAwaiter().GetResult();
+        Response.Headers.ContentDisposition = "inline";
+        return PhysicalFile(_storageService.GetReportAbsolutePath(report.StoredFileName), "application/pdf", enableRangeProcessing: true);
     }
 
     [HttpPost("{reportId:guid}/results/{resultId:guid}/verify")]
@@ -177,6 +190,9 @@ public class ReportsController : ControllerBase
     public async Task<IActionResult> CorrectResult(Guid reportId, Guid resultId, [FromBody] ResultCorrectionRequest request, CancellationToken cancellationToken)
     {
         if (_enforceAuthorization && !await _authorization.CanModifyReportAsync(User, reportId, cancellationToken)) { await Audit("ACCESS_DENIED", "LabResult", resultId, false, cancellationToken); return NotFound(new { error = "Result was not found." }); }
+        foreach (var (field, candidate) in new[] { ("CorrectedValueNumeric", request.Value), ("CorrectedReferenceMin", request.ReferenceMin), ("CorrectedReferenceMax", request.ReferenceMax) })
+            if (LabNumericSafety.IssueCode(candidate, corrected: true) is { } code)
+                return BadRequest(new { error = "Correction cannot be stored exactly in the supported decimal format. Existing values were not changed.", code, field });
         if (request.ReferenceMin.HasValue && request.ReferenceMax.HasValue && request.ReferenceMin > request.ReferenceMax)
             return BadRequest(new { error = "Reference minimum cannot exceed reference maximum." });
         if (request.TestName is null && request.Value is null && request.ValueText is null && request.Unit is null &&
@@ -249,6 +265,7 @@ public class ReportsController : ControllerBase
             analysedAt = report.AnalysedAt,
             reportDate = report.ReportDate ?? report.UploadedAt,
             reportDateSource = report.ReportDateSource,
+            reportGeneratedDate = System.Text.Json.JsonSerializer.SerializeToElement(MedicalReportSummaryMapper.ReportGeneratedDate(report.StructuredDataJson)),
             documentType = report.DocumentType,
             documentTypeConfidence = report.DocumentTypeConfidence,
             documentTypeSignals = System.Text.Json.JsonSerializer.Deserialize<List<string>>(report.DocumentTypeSignalsJson ?? "[]"),
@@ -283,6 +300,9 @@ public class ReportsController : ControllerBase
             reportedFlag = result.ReportedFlag,
             sectionName = result.SectionName,
             methodText = result.MethodText,
+            demographicQualifier = result.DemographicQualifier,
+            applicabilityStatus = result.ApplicabilityStatus,
+            applicabilityReason = result.ApplicabilityReason,
             reviewRequired = result.ReviewRequired,
             ambiguityReason = result.AmbiguityReason,
             flagDiscrepancy = result.FlagDiscrepancy,

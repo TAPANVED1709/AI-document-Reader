@@ -6,7 +6,7 @@ export function filterResults(results: LabResult[], filter: Filter, query: strin
     const name = (result.normalizedTestName || result.originalTestName).toLowerCase();
     const matchesName = name.includes(query.toLowerCase());
     const matchesFilter = filter === 'All' || filter === result.calculatedStatus ||
-      (filter === 'Needs Review' && (result.reviewRequired || confidenceNeedsReview(result.extractionConfidence))) ||
+      (filter === 'Needs Review' && (result.reviewRequired || result.calculatedStatus === 'UNKNOWN' || result.applicabilityStatus === 'REVIEW_REQUIRED' || result.applicabilityStatus === 'NOT_APPLICABLE' || confidenceNeedsReview(result.extractionConfidence))) ||
       (filter === 'Verified' && result.isVerified);
     return matchesName && matchesFilter;
   });

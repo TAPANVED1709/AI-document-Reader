@@ -52,5 +52,16 @@ public class Phase14CorrectionHttpTests
         Assert.Equal("Value", audit[0].GetProperty("fieldName").GetString());
         var verified = await client.PostAsync(path + "/verify", null);
         Assert.Equal(HttpStatusCode.OK, verified.StatusCode);
+        foreach (var field in new[] { "value", "referenceMin", "referenceMax" })
+        {
+            var rejected = await client.PatchAsJsonAsync(path, new Dictionary<string, object> { [field] = 6392437665405192000.0000m, ["reason"] = "Synthetic unsafe correction" });
+            Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
+            Assert.Contains("NUMERIC_OUT_OF_RANGE", await rejected.Content.ReadAsStringAsync());
+        }
+        using var checkScope = factory.Services.CreateScope();
+        var checkDb = checkScope.ServiceProvider.GetRequiredService<DocumentDbContext>();
+        var unchanged = await checkDb.LabResults.SingleAsync(r => r.Id == resultId);
+        Assert.Equal(10.7m, unchanged.CorrectedValueNumeric); Assert.Equal(10.8m, unchanged.ValueNumeric); Assert.True(unchanged.IsVerified);
+        Assert.Equal(1, await checkDb.ResultCorrectionAudits.CountAsync(a => a.LabResultId == resultId));
     }
 }

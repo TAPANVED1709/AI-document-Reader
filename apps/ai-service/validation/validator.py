@@ -3,6 +3,7 @@ import re
 from typing import Iterable
 from .models import ValidationConfig, ValidationIssue
 from parsers.base import LabResultItem
+from .numeric_safety import isolate_unsafe_numbers
 
 class ValidationEngine:
     """Post-parser, deterministic extraction-quality validation."""
@@ -25,12 +26,20 @@ class ValidationEngine:
                     output[i].append(issue); output[j].append(issue.model_copy())
         for result, issues in zip(results, output):
             result.reviewRequired = result.reviewRequired or any(x.requiresReview for x in issues)
+            if any(i.code in {"LOW_VALUE_CONFIDENCE", "LOW_REFERENCE_CONFIDENCE", "ASSOCIATION_LOW_CONFIDENCE", "MALFORMED_REFERENCE_RANGE", "DUPLICATE_SOURCE_CANDIDATE", "CONFLICTING_DUPLICATE", "POSSIBLE_DECIMAL_ERROR", "OCR_CHARACTER_CONFUSION", "NUMERIC_OUT_OF_RANGE", "NUMERIC_PRECISION_UNSUPPORTED"} for i in issues):
+                result.calculatedStatus = "UNKNOWN"
+            if result.calculatedStatus == 'UNKNOWN': result.reviewRequired = True
             result.reviewState = "REVIEW_REQUIRED" if result.reviewRequired else "AUTO_ACCEPTED"
             result.validationIssues = issues
         return output
 
     def _validate_one(self, result):
-        issues = []
+        numeric_issues = isolate_unsafe_numbers(result)
+        issues = list(numeric_issues)
+        if result.applicabilityStatus in {'REVIEW_REQUIRED', 'NOT_APPLICABLE'}:
+            issues.append(self._issue(result.applicabilityReason or 'DEMOGRAPHIC_REVIEW_REQUIRED', 'WARNING', 'ApplicabilityStatus', 'Verify applicability against explicitly printed patient demographics.'))
+        if result.secondaryRangePlaceholder:
+            issues.append(self._issue('SECONDARY_RANGE_PLACEHOLDER', 'WARNING', 'ReferenceText', 'Printed secondary interval is 0-0; comparison uses the primary printed interval.'))
         fc = result.fieldConfidences or {}
         if not result.originalName.strip(): issues.append(self._issue("MISSING_TEST_NAME", "HIGH", "OriginalName", "Test name is missing."))
         if not result.valueText.strip(): issues.append(self._issue("MISSING_RESULT", "HIGH", "ValueText", "Result value is missing."))
@@ -48,7 +57,7 @@ class ValidationEngine:
             issues.append(self._issue("MALFORMED_REFERENCE_RANGE", "HIGH", "ReferenceText", "Lower-bound reference operator has no threshold."))
         if result.discrepancy:
             issues.append(self._issue("REPORTED_FLAG_MISMATCH", "HIGH", "ReportedFlag", result.discrepancy))
-        status = self._calculate_status(result)
+        status = "UNKNOWN" if numeric_issues else self._calculate_status(result)
         result.calculatedStatus = status
         expected = {"L": "LOW", "LOW": "LOW", "H": "HIGH", "HIGH": "HIGH", "N": "NORMAL", "NORMAL": "NORMAL"}.get((result.reportedFlag or "").upper())
         if expected and expected != status:
@@ -70,6 +79,9 @@ class ValidationEngine:
 
     @staticmethod
     def _calculate_status(result):
+        # A censored measured value is not an exact number. Until interval-value
+        # comparison is supported, retain it for review instead of treating it as equality.
+        if result.valueOperator: return 'UNKNOWN'
         if result.value is None or result.referenceType in {"UNKNOWN", "TEXT_ONLY"}: return "UNKNOWN"
         if result.referenceType == "BETWEEN" and (result.referenceMin is None or result.referenceMax is None or result.referenceMin > result.referenceMax): return "UNKNOWN"
         if result.referenceType == "BETWEEN" and result.referenceMin is not None and result.referenceMax is not None:
@@ -89,6 +101,8 @@ class ValidationEngine:
         except (KeyError, TypeError, ValueError, json.JSONDecodeError): return False
 
     def _conflicting_duplicate(self, a, b):
+        if a.demographicQualifier != b.demographicQualifier:
+            return False
         if a.methodText and b.methodText and a.methodText != b.methodText:
             return False
         # Without source geometry there is no safe way to distinguish a

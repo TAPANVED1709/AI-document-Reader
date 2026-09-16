@@ -34,6 +34,7 @@ public sealed class ReportProcessingService : IReportProcessingService
         var run = runs.OrderByDescending(x => x.StartedAt).FirstOrDefault();
         if (run is null) { run = new AnalysisRun { MedicalReportId = report.Id, ProcessorVersion = job.ProcessingVersion }; _db.AnalysisRuns.Add(run); }
         var sw = Stopwatch.StartNew();
+        var savingResults = false;
         try
         {
             var response = await _ai.AnalyseDocumentAsync(_storage.GetReportAbsolutePath(report.StoredFileName), report.OriginalFileName, cancellationToken);
@@ -41,6 +42,13 @@ public sealed class ReportProcessingService : IReportProcessingService
             report.PageSourcesJson = JsonSerializer.Serialize(response.PageSources); report.DocumentType = response.DocumentType;
             report.DocumentTypeConfidence = response.DocumentTypeConfidence; report.DocumentTypeSignalsJson = JsonSerializer.Serialize(response.DocumentTypeSignals ?? []);
             report.StructuredDataJson = JsonSerializer.Serialize(response.StructuredData ?? new Dictionary<string, object>());
+            if (report.ReportDate is null && response.DocumentType == "LAB_REPORT"
+                && DateTimeOffset.TryParseExact(MedicalReportSummaryMapper.ReportGeneratedDate(report.StructuredDataJson), "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AssumeUniversal, out var reportDate))
+            {
+                report.ReportDate = reportDate;
+                report.ReportDateSource = "DOCUMENT";
+            }
 
             // A processing version plus a unique ReportId job makes retries idempotent. Existing rows are reused.
             var existing = await _db.LabResults.Where(x => x.MedicalReportId == report.Id).ToListAsync(cancellationToken);
@@ -56,22 +64,34 @@ public sealed class ReportProcessingService : IReportProcessingService
                         ReferenceMax = extracted.ReferenceMax, ReferenceText = extracted.ReferenceText, ReferenceType = extracted.ReferenceType,
                         ReferenceOperator = extracted.ReferenceOperator, ReportedFlag = extracted.ReportedFlag, SectionName = extracted.Section,
                         MethodText = extracted.MethodText, ReviewRequired = extracted.ReviewRequired, AmbiguityReason = extracted.AmbiguityReason,
-                        FlagDiscrepancy = extracted.Discrepancy, CalculatedStatus = _classifier.Classify(extracted.Value, extracted.ReferenceMin, extracted.ReferenceMax, extracted.ReferenceType),
+                        DemographicQualifier = extracted.DemographicQualifier, ApplicabilityStatus = extracted.ApplicabilityStatus,
+                        ApplicabilityReason = extracted.ApplicabilityReason,
+                        FlagDiscrepancy = extracted.Discrepancy,
                         ExtractionConfidence = extracted.Confidence, PageNumber = extracted.Page, BoundingBoxJson = extracted.BoundingBoxJson, CreatedAt = DateTimeOffset.UtcNow,
                         ValidationIssues = extracted.ValidationIssues?.Select(i => new ValidationIssue { Code = i.Code, Severity = i.Severity, FieldName = i.Field, Message = i.Message, RequiresReview = i.RequiresReview }).ToList() ?? []
                     };
+                    LabNumericSafety.SanitizeExtracted(entity);
+                    entity.ReviewRequired |= entity.ApplicabilityStatus is "REVIEW_REQUIRED" or "NOT_APPLICABLE";
+                    if (LabClassificationSafety.CanClassify(entity, extracted.FieldConfidences))
+                        entity.CalculatedStatus = _classifier.Classify(entity.ValueNumeric, entity.ReferenceMin, entity.ReferenceMax, entity.ReferenceType);
+                    else entity.ReviewRequired = true;
+                    if (entity.CalculatedStatus == ResultStatus.UNKNOWN) entity.ReviewRequired = true;
                     _db.LabResults.Add(entity);
+                    existing.Add(entity);
                 }
             }
             var ocrUnavailable = response.RequiresOcr && !response.OcrApplied;
-            report.Status = ocrUnavailable ? ReportStatus.RequiresOcr : response.Results.Any(x => x.ReviewRequired) ? ReportStatus.RequiresReview : ReportStatus.Completed;
+            var requiresReview = existing.Any(x => x.ReviewRequired);
+            report.Status = ocrUnavailable ? ReportStatus.RequiresOcr : requiresReview ? ReportStatus.RequiresReview : ReportStatus.Completed;
             report.AnalysedAt = DateTimeOffset.UtcNow; run.Status = AnalysisStatus.Completed; run.CompletedAt = DateTimeOffset.UtcNow;
-            job.Status = ocrUnavailable || response.Results.Any(x => x.ReviewRequired) ? ProcessingJobStatus.REVIEW_REQUIRED : ProcessingJobStatus.COMPLETED;
+            job.Status = ocrUnavailable || requiresReview ? ProcessingJobStatus.REVIEW_REQUIRED : ProcessingJobStatus.COMPLETED;
             job.CompletedAt = DateTimeOffset.UtcNow; job.HeartbeatAt = job.CompletedAt;
             job.NextRetryAt = null;
             job.LastErrorCode = ocrUnavailable ? "OCR_UNAVAILABLE" : null;
             job.LastErrorSafeMessage = ocrUnavailable ? "OCR was required but unavailable; verify the source report." : null;
+            savingResults = true;
             await _db.SaveChangesAsync(cancellationToken);
+            savingResults = false;
             if (_audit is not null) await _audit.RecordAsync(new System.Security.Claims.ClaimsPrincipal(new System.Security.Claims.ClaimsIdentity()), "PROCESSING_COMPLETED", true, "ProcessingJob", job.Id, cancellationToken);
             _logger.LogInformation("Processing completed jobId={JobId} reportId={ReportId} attempt={Attempt} status={Status} durationMs={DurationMs}", job.Id, report.Id, job.AttemptCount, job.Status, sw.ElapsedMilliseconds);
         }
@@ -87,8 +107,9 @@ public sealed class ReportProcessingService : IReportProcessingService
             foreach (var entry in _db.ChangeTracker.Entries<LabResult>().Where(x => x.State == EntityState.Added).ToList())
                 entry.State = EntityState.Detached;
             run.Status = AnalysisStatus.Failed; run.CompletedAt = DateTimeOffset.UtcNow;
-            var transient = ex is HttpRequestException || ex.Message.Contains("unreachable", StringComparison.OrdinalIgnoreCase) || ex is IOException;
-            job.LastErrorCode = ex.Message.Contains("PAGE_LIMIT_EXCEEDED", StringComparison.OrdinalIgnoreCase) ? "PAGE_LIMIT_EXCEEDED" : ex.Message.Contains("PDF_INVALID", StringComparison.OrdinalIgnoreCase) ? "PDF_INVALID" : ex.Message.Contains("OCR", StringComparison.OrdinalIgnoreCase) ? "OCR_UNAVAILABLE" : transient ? "AI_SERVICE_UNAVAILABLE" : "PARSER_FAILED";
+            var persistenceFailure = savingResults || ex is DbUpdateException || ex is System.Data.Common.DbException;
+            var transient = !persistenceFailure && (ex is HttpRequestException || ex.Message.Contains("unreachable", StringComparison.OrdinalIgnoreCase) || ex is IOException);
+            job.LastErrorCode = persistenceFailure ? "PERSISTENCE_FAILED" : ex.Message.Contains("PAGE_LIMIT_EXCEEDED", StringComparison.OrdinalIgnoreCase) ? "PAGE_LIMIT_EXCEEDED" : ex.Message.Contains("PDF_INVALID", StringComparison.OrdinalIgnoreCase) ? "PDF_INVALID" : ex.Message.Contains("OCR", StringComparison.OrdinalIgnoreCase) ? "OCR_UNAVAILABLE" : transient ? "AI_SERVICE_UNAVAILABLE" : "PARSER_FAILED";
             job.LastErrorSafeMessage = "The document could not be processed automatically.";
             if (job.LastErrorCode is "PDF_INVALID" or "PAGE_LIMIT_EXCEEDED")
             { job.Status = ProcessingJobStatus.FAILED; job.CompletedAt = DateTimeOffset.UtcNow; report.Status = ReportStatus.Failed; }

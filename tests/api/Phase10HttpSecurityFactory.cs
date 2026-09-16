@@ -14,6 +14,7 @@ namespace AI.DocumentReader.Tests;
 public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection = new("Data Source=:memory:");
+    private readonly string _files = Path.Combine(Path.GetTempPath(), "pdf-http-" + Guid.NewGuid().ToString("N"));
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // The hosted worker starts before SeedAsync. Keep the in-memory schema
@@ -21,6 +22,11 @@ public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
         if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
         builder.UseEnvironment("Development");
         builder.UseSetting("Security:AuthRequestsPerMinute", "100");
+        builder.UseSetting("Cors:AllowedOrigins:0", "http://localhost:3001");
+        builder.UseSetting("Cors:AllowedOrigins:1", "https://viewer.synthetic.test:8443");
+        Directory.CreateDirectory(_files);
+        File.WriteAllText(Path.Combine(_files, "synthetic.pdf"), "%PDF-1.4\n% Synthetic HTTP range fixture\n%%EOF\n");
+        builder.UseSetting("Storage:ReportsPath", _files);
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<DocumentDbContext>>();
@@ -63,4 +69,16 @@ public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
         return (client, user);
     }
     public sealed record CsrfResponse(string Token);
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        if (disposing)
+        {
+            _connection.Dispose();
+            var file = Path.Combine(_files, "synthetic.pdf");
+            if (File.Exists(file)) File.Delete(file);
+            if (Directory.Exists(_files)) Directory.Delete(_files);
+        }
+    }
 }

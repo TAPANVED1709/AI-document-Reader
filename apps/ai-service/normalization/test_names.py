@@ -16,6 +16,7 @@ class NameMatch:
 class TestNameNormalizer:
     __test__ = False
     GROUPS = {
+        "Ionized Calcium": ["ionized calcium", "ionised calcium"],
         "Hemoglobin": ["hemoglobin", "haemoglobin", "hb", "hgb"],
         "RBC": ["rbc", "red blood cell count", "erythrocyte count"],
         "WBC": ["wbc", "tlc", "total leukocyte count", "white blood cell count"],
@@ -50,6 +51,7 @@ class TestNameNormalizer:
 
     def __init__(self):
         self.aliases = {self._key(alias): canonical for canonical, aliases in self.GROUPS.items() for alias in aliases}
+        self.aliases[self._key("blood glucose - fasting")] = "Glucose"
         self._ordered = sorted(self.aliases, key=len, reverse=True)
 
     @staticmethod

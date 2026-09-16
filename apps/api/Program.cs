@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using AI.DocumentReader.Api.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,9 +92,22 @@ builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>(client =>
 });
 
 // 5. Configure CORS
+var frontendOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? ["http://localhost:3001", "http://127.0.0.1:3001"];
+// These exact origins also form the PDF frame allowlist. Reject CSP syntax,
+// wildcards and URL paths rather than interpreting them as broader permissions.
+frontendOrigins = frontendOrigins.Select(origin =>
+{
+    if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+        || uri.Scheme is not ("http" or "https") || origin.Contains('*')
+        || uri.UserInfo.Length != 0 || uri.AbsolutePath != "/"
+        || uri.Query.Length != 0 || uri.Fragment.Length != 0)
+        throw new InvalidOperationException("Cors:AllowedOrigins must contain exact HTTP(S) origins.");
+    return uri.GetLeftPart(UriPartial.Authority);
+}).Distinct().ToArray();
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("LocalFrontend", policy => policy.WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:3000", "http://127.0.0.1:3000"]).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+    options.AddPolicy("LocalFrontend", policy => policy.WithOrigins(frontendOrigins).AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 });
 
 var app = builder.Build();
@@ -126,7 +141,27 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.Use(async (context, next) => { context.Response.Headers["X-Content-Type-Options"] = "nosniff"; context.Response.Headers["Referrer-Policy"] = "no-referrer"; context.Response.Headers["X-Frame-Options"] = "DENY"; context.Response.Headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http://localhost:3000 http://127.0.0.1:3000 http://localhost:5000 http://127.0.0.1:5000; frame-src 'self' http://localhost:5000 http://127.0.0.1:5000; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"; await next(); });
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        var action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
+        var inlinePdf = action?.ControllerTypeInfo.AsType() == typeof(ReportsController)
+            && action.ActionName == nameof(ReportsController.GetReportFile)
+            && context.Response.StatusCode is 200 or 206
+            && context.Response.ContentType == "application/pdf" && frontendOrigins.Length > 0;
+        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        context.Response.Headers["Referrer-Policy"] = "no-referrer";
+        if (inlinePdf) context.Response.Headers.Remove("X-Frame-Options");
+        else context.Response.Headers["X-Frame-Options"] = "DENY";
+        var ancestors = inlinePdf ? string.Join(' ', frontendOrigins) : "'none'";
+        context.Response.Headers["Content-Security-Policy"] = inlinePdf
+            ? $"frame-ancestors {ancestors}"
+            : $"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' {string.Join(' ', frontendOrigins)}; frame-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'";
+        return Task.CompletedTask;
+    });
+    await next();
+});
 app.UseRouting();
 app.UseCors("LocalFrontend");
 app.UseRateLimiter();

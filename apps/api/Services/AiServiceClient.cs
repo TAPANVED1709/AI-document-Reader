@@ -26,7 +26,9 @@ public record AiLabResultDto(
     string? OriginalUnit = null, string? NormalizedUnit = null, string? ValueOperator = null,
     string ReferenceType = "UNKNOWN", string? ReferenceOperator = null, string? ReportedFlag = null, string? Section = null,
     string? MethodText = null, bool ReviewRequired = false, string? AmbiguityReason = null, string? Discrepancy = null,
-    List<AiValidationIssueDto>? ValidationIssues = null
+    List<AiValidationIssueDto>? ValidationIssues = null,
+    string? DemographicQualifier = null, string ApplicabilityStatus = "NOT_REQUIRED", string? ApplicabilityReason = null,
+    Dictionary<string, decimal>? FieldConfidences = null
 );
 
 public record AiPageSourceDto(int Page, string Source, string? Error = null);

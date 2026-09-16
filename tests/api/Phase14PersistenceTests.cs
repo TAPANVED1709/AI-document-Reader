@@ -48,6 +48,7 @@ public class Phase14PersistenceTests
         db.ChangeTracker.Clear();
         var persisted = await db.ProcessingJobs.SingleAsync();
         Assert.Equal(ProcessingJobStatus.FAILED, persisted.Status);
+        Assert.Equal("PERSISTENCE_FAILED", persisted.LastErrorCode);
         Assert.NotNull(persisted.CompletedAt);
         Assert.Equal(ReportStatus.Failed, (await db.MedicalReports.SingleAsync()).Status);
         Assert.Empty(await db.LabResults.ToListAsync());

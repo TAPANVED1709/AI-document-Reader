@@ -12,6 +12,7 @@ public class ReferenceRangeClassifier : IReferenceRangeClassifier
     public ResultStatus Classify(decimal? value, decimal? referenceMin, decimal? referenceMax, string referenceType = "UNKNOWN")
     {
         if (!value.HasValue || referenceType is "TEXT_ONLY") return ResultStatus.UNKNOWN;
+        if (referenceMin.HasValue && referenceMax.HasValue && referenceMin > referenceMax) return ResultStatus.UNKNOWN;
         if (referenceType == "UNKNOWN") referenceType = referenceMin.HasValue && referenceMax.HasValue ? "BETWEEN" : referenceMax.HasValue ? "LESS_THAN_OR_EQUAL" : referenceMin.HasValue ? "GREATER_THAN_OR_EQUAL" : "UNKNOWN";
         var val = value.Value;
         return referenceType switch

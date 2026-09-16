@@ -7,5 +7,5 @@ const results = [result('Hemoglobin', 'LOW', .7), result('Creatinine', 'NORMAL',
 
 describe('result filters', () => {
   it('filters each status and search term', () => { expect(filterResults(results, 'HIGH', '')).toHaveLength(1); expect(filterResults(results, 'LOW', 'hem')).toHaveLength(1); expect(filterResults(results, 'All', 'creat')).toHaveLength(1); expect(filterResults(results, 'UNKNOWN', 'hem')).toHaveLength(0); });
-  it('filters review and verified states', () => { expect(filterResults(results, 'Needs Review', '')).toHaveLength(1); expect(filterResults(results, 'Verified', '')).toHaveLength(1); });
+  it('filters review and verified states', () => { expect(filterResults(results, 'Needs Review', '').map(row => row.originalTestName)).toEqual(['Hemoglobin', 'Comment']); expect(filterResults(results, 'Verified', '')).toHaveLength(1); });
 });

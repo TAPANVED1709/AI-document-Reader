@@ -98,6 +98,9 @@ public class DocumentDbContext : DbContext
             entity.Property(e => e.MethodText).HasMaxLength(255);
             entity.Property(e => e.AmbiguityReason).HasMaxLength(500);
             entity.Property(e => e.FlagDiscrepancy).HasMaxLength(500);
+            entity.Property(e => e.DemographicQualifier).HasMaxLength(40);
+            entity.Property(e => e.ApplicabilityStatus).HasMaxLength(40).IsRequired().HasDefaultValue("NOT_REQUIRED");
+            entity.Property(e => e.ApplicabilityReason).HasMaxLength(255);
             entity.Property(e => e.CalculatedStatus)
                   .HasConversion<string>()
                   .HasMaxLength(50)
@@ -106,6 +109,10 @@ public class DocumentDbContext : DbContext
             entity.Property(e => e.ValueNumeric).HasPrecision(18, 4);
             entity.Property(e => e.ReferenceMin).HasPrecision(18, 4);
             entity.Property(e => e.ReferenceMax).HasPrecision(18, 4);
+            // Explicitly retain the existing SQL Server correction column types.
+            entity.Property(e => e.CorrectedValueNumeric).HasPrecision(18, 2);
+            entity.Property(e => e.CorrectedReferenceMin).HasPrecision(18, 2);
+            entity.Property(e => e.CorrectedReferenceMax).HasPrecision(18, 2);
             entity.Property(e => e.ExtractionConfidence).HasPrecision(5, 4);
 
             entity.HasIndex(e => e.MedicalReportId);
