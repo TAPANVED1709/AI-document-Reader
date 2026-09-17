@@ -53,3 +53,4 @@ desktop.ini
 
 # Local diagnostic logs
 api-failure.log
+apps/web/public/pdfjs/

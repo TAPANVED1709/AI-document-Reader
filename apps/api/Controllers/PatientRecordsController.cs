@@ -12,10 +12,10 @@ namespace AI.DocumentReader.Api.Controllers;
 [ApiController, Authorize(Roles = "PATIENT")]
 [Route("api/patient")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class PatientRecordsController(DocumentDbContext db, ISecurityAuditService audit) : ControllerBase
+public sealed class PatientRecordsController(DocumentDbContext db, ISecurityAuditService audit, ILocalStorageService storage) : ControllerBase
 {
     private Guid PatientId => Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : Guid.Empty;
-    private IQueryable<MedicalReport> Owned => db.MedicalReports.AsNoTracking().Where(r => r.PatientUserId == PatientId);
+    private IQueryable<MedicalReport> Owned => db.MedicalReports.AsNoTracking().InMedicalHistory().Where(r => r.PatientUserId == PatientId);
     private Task Audit(string action, Guid? id, CancellationToken ct) => audit.RecordAsync(User, action, true, "MedicalReport", id, ct);
     private static JsonElement Data(string? json) => JsonSerializer.Deserialize<JsonElement>(json ?? "{}");
     private static string? Header(string? json, string key)
@@ -87,6 +87,7 @@ public sealed class PatientRecordsController(DocumentDbContext db, ISecurityAudi
         return Ok(new
         {
             id = report.Id, reportId = report.Id, report.OriginalFileName, report.UploadedAt,
+            sourceFileAvailable = storage.FileExists(report.StoredFileName),
             reportGeneratedDate = Nullable(MedicalReportSummaryMapper.ReportGeneratedDate(report.StructuredDataJson)),
             status = State(report.Status), report.ProcessingMode, report.OcrRequired, report.OcrApplied, report.DocumentType,
             patient = data.TryGetProperty("patient", out var patient) ? patient : JsonSerializer.SerializeToElement(new { }),
@@ -107,7 +108,7 @@ public sealed class PatientRecordsController(DocumentDbContext db, ISecurityAudi
     private async Task<IActionResult> Measurements(string? name, bool latest, int page, int pageSize, CancellationToken ct)
     {
         if (page < 1 || page > 100000 || pageSize is < 1 or > 100 || name?.Length > 255) return BadRequest(new { error = "Invalid history request." });
-        var query = db.LabResults.AsNoTracking().Where(l => l.MedicalReport!.PatientUserId == PatientId);
+        var query = db.LabResults.AsNoTracking().InMedicalHistory().Where(l => l.MedicalReport!.PatientUserId == PatientId);
         // Use persisted normalization. No re-extraction, clinical inference, or unit conversion.
         if (name is not null) query = query.Where(l => (l.CorrectedTestName ?? l.NormalizedTestName ?? l.OriginalTestName).ToUpper() == name.ToUpper());
         var rows = await query.Select(l => new LabResult

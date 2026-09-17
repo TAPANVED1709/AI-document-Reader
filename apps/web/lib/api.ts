@@ -40,12 +40,18 @@ const apiFetch = async (input: RequestInfo | URL, init: RequestInit = {}) => {
 import type { CurrentUser, ExplanationResponse, Report, QueuedReport, LabResult, TrendResponse, TimelineEvent, TimelineResult } from './types';
 
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5002';
+export async function registerPatient(input: { firstName: string; lastName: string; email: string; password: string }): Promise<void> {
+  const { firstName, lastName, email, password } = input;
+  const response = await apiFetch(API_BASE_URL + '/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName, lastName, email, password }) });
+  if (!response.ok) throw new Error(response.status === 429 || response.status === 503 ? 'Too many attempts. Please wait and try again.' : 'Registration could not be completed. Check your details or sign in if you already have an account.');
+  clearCsrfToken();
+}
 export async function getPatientData<T>(path: string): Promise<T> {
   const response = await apiFetch(`${API_BASE_URL}/api/patient/${path}`, { cache: 'no-store' });
   if (!response.ok) throw new Error(await readError(response));
   return response.json();
 }
-async function readError(response: Response) { const body = await response.json().catch(() => null); return body?.error || 'The document service could not process this report.'; }
+async function readError(response: Response) { if (response.status === 413) return 'This report exceeds the 20 MB upload limit.'; const body = await response.json().catch(() => null); return body?.error || 'The document service could not process this report.'; }
 export async function uploadReport(file: File, selfUpload = false): Promise<Report | QueuedReport> { const form = new FormData(); form.append('file', file); const response = await apiFetch(`${API_BASE_URL}/api/reports/${selfUpload ? 'self-upload' : 'upload'}`, { method: 'POST', body: form }); if (!response.ok) throw new Error(await readError(response)); return response.json(); }
 export async function getCurrentUser(): Promise<CurrentUser | null> { const response = await apiFetch(`${API_BASE_URL}/api/auth/me`); if (response.status === 401) return null; if (!response.ok) throw new Error(await readError(response)); return response.json(); }
 export async function getReport(reportId: string): Promise<Report> { const response = await apiFetch(`${API_BASE_URL}/api/reports/${reportId}`); if (!response.ok) throw new Error(await readError(response)); return response.json(); }

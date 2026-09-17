@@ -32,10 +32,11 @@ services:
       MedicalSoftwareExport__Enabled: ${MEDICAL_SOFTWARE_EXPORT_ENABLED:-false}
       Cors__AllowedOrigins__0: ${CORS_ORIGIN:-http://localhost:3001}
       AiService__BaseUrl: http://ai-service:8000
-      Storage__RootPath: /var/lib/ai-document-reader/reports
+      Storage__ReportsPath: /var/lib/ai-document-reader/reports
       Security__MaxUploadBytes: ${MAX_UPLOAD_BYTES:-20971520}
     volumes:
       - report_storage:/var/lib/ai-document-reader/reports
+      - api_keys:/root/.aspnet/DataProtection-Keys
     ports:
       - "5002:8080"
     networks:
@@ -140,6 +141,7 @@ services:
 volumes:
   sql_data:
   report_storage:
+  api_keys:
   ollama_data:
 
 networks:

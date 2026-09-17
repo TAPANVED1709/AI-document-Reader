@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\apps\api\AI.DocumentReader.Api.csproj" />
+    <EmbeddedResource Include="..\pilot\fixtures\pilot-01.pdf" LogicalName="SyntheticBatch.pdf" />
   </ItemGroup>
 
 </Project>

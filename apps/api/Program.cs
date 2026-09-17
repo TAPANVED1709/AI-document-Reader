@@ -192,6 +192,8 @@ app.UseRouting();
 app.UseCors("LocalFrontend");
 app.UseRateLimiter();
 app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<UploadSizeMiddleware>();
 if (!app.Environment.IsDevelopment()) { app.UseHttpsRedirection(); app.UseHsts(); }
 app.Use(async (context, next) =>
 {
@@ -203,8 +205,6 @@ app.Use(async (context, next) =>
     }
     await next();
 });
-
-app.UseAuthorization();
 
 app.MapControllers();
 

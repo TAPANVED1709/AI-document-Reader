@@ -43,6 +43,7 @@ export type LabResult = {
 };
 
 export type Report = {
+  sourceFileAvailable?: boolean;
   id: string;
   originalFileName: string;
   processingMode: string;

@@ -59,7 +59,7 @@ public class LocalStorageService : ILocalStorageService
 
         if (file.Length > _maxFileSizeInBytes)
         {
-            throw new ArgumentException($"File size exceeds maximum allowed limit of {_maxFileSizeInBytes / (1024 * 1024)} MB.");
+            throw new UploadTooLargeException();
         }
 
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();

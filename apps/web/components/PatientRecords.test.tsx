@@ -25,7 +25,7 @@ it('shows a recoverable API error without leaking previous patient records', asy
 });
 it('opens persisted qualitative and demographic-review results without staff mutation controls', async () => {
   api.getPatientData.mockImplementation(async (path: string) => path === 'medical-records/report-a' ? {
-    id: 'report-a', originalFileName: 'synthetic.pdf', status: 'NEEDS_REVIEW', processingMode: 'NATIVE', resultsCount: 2,
+    id: 'report-a', originalFileName: 'synthetic.pdf', sourceFileAvailable: false, status: 'NEEDS_REVIEW', processingMode: 'NATIVE', resultsCount: 2,
     structuredData: { patient: { name: 'Synthetic', sex: null }, report: { laboratoryName: 'Synthetic Lab' } },
     results: [
       { id: 'q', originalTestName: 'HBsAg', valueNumeric: null, valueText: 'Non-Reactive', calculatedStatus: 'UNKNOWN', extractionConfidence: .95, pageNumber: 1, isVerified: false },
@@ -37,6 +37,6 @@ it('opens persisted qualitative and demographic-review results without staff mut
   expect(await screen.findByText('Non-Reactive')).toBeTruthy();
   expect(screen.getByText('✓ NORMAL')).toBeTruthy(); expect(screen.getByText('Demographic review required')).toBeTruthy();
   expect(within(screen.getByRole('region', { name: 'Report header' })).getByText('Synthetic Lab')).toBeTruthy();
-  expect(screen.getByTitle('Original laboratory report').getAttribute('src')).toContain('/report-a/file#page=1');
+  expect(screen.getByText('Original report file is unavailable.')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Verify' })).toBeNull(); expect(screen.queryByRole('button', { name: 'Correct' })).toBeNull();
 });

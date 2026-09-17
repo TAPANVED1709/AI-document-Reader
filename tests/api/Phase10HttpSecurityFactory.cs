@@ -4,7 +4,6 @@ using AI.DocumentReader.Api.Domain;
 using AI.DocumentReader.Api.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -13,13 +12,9 @@ namespace AI.DocumentReader.Tests;
 
 public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
 {
-    private readonly SqliteConnection _connection = new("Data Source=:memory:");
     private readonly string _files = Path.Combine(Path.GetTempPath(), "pdf-http-" + Guid.NewGuid().ToString("N"));
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // The hosted worker starts before SeedAsync. Keep the in-memory schema
-        // alive across startup scopes instead of racing a vanished database.
-        if (_connection.State != System.Data.ConnectionState.Open) _connection.Open();
         builder.UseEnvironment("Development");
         builder.UseSetting("Security:AuthRequestsPerMinute", "100");
         builder.UseSetting("Cors:AllowedOrigins:0", "http://localhost:3001");
@@ -30,16 +25,16 @@ public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<DocumentDbContext>>();
-            services.AddDbContext<DocumentDbContext>(options => options.UseSqlite(_connection));
+            // HTTP requests and hosted workers run concurrently. Each scope needs
+            // its own connection; sharing one SQLite connection races EF function
+            // registration against active readers and can stop the test host.
+            services.AddDbContext<DocumentDbContext>(options => options.UseSqlite(
+                $"Data Source={Path.Combine(_files, "http-tests.db")};Pooling=False"));
         });
     }
 
     public async Task SeedAsync()
     {
-        if (_connection.State != System.Data.ConnectionState.Open)
-        {
-            await _connection.OpenAsync();
-        }
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<DocumentDbContext>();
         await db.Database.EnsureCreatedAsync();
@@ -57,7 +52,7 @@ public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
     }
 
     public static ApplicationUser NewUser(string email, string role, Microsoft.AspNetCore.Identity.PasswordHasher<ApplicationUser> hasher, Guid? organizationId = null) { var user = new ApplicationUser { Email = email, Role = role, FirstName = role, OrganizationId = organizationId }; user.PasswordHash = hasher.HashPassword(user, "StrongPassword123!"); return user; }
-    private static MedicalReport NewReport(Guid? patient, Guid? organization, Guid? uploader) => new() { OriginalFileName = "synthetic.pdf", StoredFileName = "synthetic.pdf", ContentType = "application/pdf", FileSize = 1, PatientUserId = patient, OrganizationId = organization, UploadedByUserId = uploader };
+    private static MedicalReport NewReport(Guid? patient, Guid? organization, Guid? uploader) => new() { Status = ReportStatus.Completed, OriginalFileName = "synthetic.pdf", StoredFileName = "synthetic.pdf", ContentType = "application/pdf", FileSize = 1, PatientUserId = patient, OrganizationId = organization, UploadedByUserId = uploader };
     public async Task<(HttpClient Client, ApplicationUser User)> LoginAsync(string email)
     {
         var client = CreateClient(new WebApplicationFactoryClientOptions { HandleCookies = true });
@@ -75,7 +70,6 @@ public sealed class Phase10HttpSecurityFactory : WebApplicationFactory<Program>
         base.Dispose(disposing);
         if (disposing)
         {
-            _connection.Dispose();
             if (Directory.Exists(_files))
             {
                 // This factory owns its unique temporary directory, including files created by upload tests.

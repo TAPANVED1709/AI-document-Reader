@@ -58,7 +58,7 @@ public class ReportsController : ControllerBase
     [Authorize(Roles = "LAB_STAFF,PATHOLOGIST")]
     [EnableRateLimiting("upload")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(20 * 1024 * 1024)] // 20 MB limit
+    [RequestSizeLimit(UploadSizeMiddleware.RequestLimit)] // Includes framing; per-file limit remains 20 MiB.
     public Task<IActionResult> UploadReport(IFormFile file, CancellationToken cancellationToken)
         => QueueReportAsync(file, null, cancellationToken);
 
@@ -66,7 +66,7 @@ public class ReportsController : ControllerBase
     [Authorize(Roles = "PATIENT")]
     [EnableRateLimiting("upload")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(20 * 1024 * 1024)]
+    [RequestSizeLimit(UploadSizeMiddleware.RequestLimit)]
     public Task<IActionResult> SelfUploadReport(IFormFile file, CancellationToken cancellationToken)
     {
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var patientId))
@@ -82,6 +82,7 @@ public class ReportsController : ControllerBase
         }
         catch (ArgumentException ex)
         {
+            if (ex is UploadTooLargeException) return StatusCode(413, new { error = ex.Message });
             _logger.LogWarning("File upload validation failed: {Message}", ex.Message);
             return BadRequest(new { error = ex.Message });
         }
@@ -275,11 +276,12 @@ public class ReportsController : ControllerBase
 
     private Task Audit(string action, string resourceType, Guid? resourceId, bool success, CancellationToken ct) => _audit is null ? Task.CompletedTask : _audit.RecordAsync(User, action, success, resourceType, resourceId, ct);
 
-    private static object MapToDto(MedicalReport report, List<LabResult> results)
+    private object MapToDto(MedicalReport report, List<LabResult> results)
     {
         return new
         {
             id = report.Id,
+            sourceFileAvailable = _storageService.FileExists(report.StoredFileName),
             originalFileName = report.OriginalFileName,
             fileSize = report.FileSize,
             status = report.Status.ToString(),

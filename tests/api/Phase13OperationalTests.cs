@@ -120,6 +120,17 @@ public class Phase13OperationalTests(ITestOutputHelper output)
     }
 
     [Fact]
+    public async Task ImmediateRestartEventuallyRecoversClaimThatWasNotYetStaleAtStartup()
+    {
+        await using var fixture = new Fixture(); var job = await fixture.Seed();
+        using var oldWorker = fixture.Worker(); Assert.NotNull(await Claim(oldWorker));
+        using var replacement = fixture.Worker(); await replacement.StartAsync(default);
+        try { await Until(async () => (await fixture.Read(job.Id)).Status == ProcessingJobStatus.COMPLETED); }
+        finally { await replacement.StopAsync(default); }
+        Assert.Equal(2, (await fixture.Read(job.Id)).AttemptCount); await fixture.AssertOneSet(job.ReportId);
+    }
+
+    [Fact]
     public async Task RetryRecoversBeforeBoundedAttemptsExpire()
     {
         await using var fixture = new Fixture { Unavailable = true }; var job = await fixture.Seed();

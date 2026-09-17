@@ -21,7 +21,7 @@ public class TrendsController : ControllerBase
     [HttpGet("tests")]
     public async Task<IActionResult> Tests(CancellationToken ct)
     {
-        var query = _db.LabResults.AsNoTracking().Where(r => r.NormalizedTestName != null);
+        var query = _db.LabResults.AsNoTracking().InMedicalHistory().Where(r => r.NormalizedTestName != null);
         if (User.IsInRole("PATIENT"))
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var patientId)) return Unauthorized();
@@ -38,8 +38,8 @@ public class TrendsController : ControllerBase
     {
         var userId = Guid.TryParse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier), out var uid) ? uid : Guid.Empty;
         var organizationId = Guid.TryParse(User.FindFirstValue("organization_id"), out var oid) ? oid : Guid.Empty;
-        var allowedReportIds = await _db.MedicalReports.AsNoTracking().Where(r => r.UploadedByUserId == userId || r.PatientUserId == userId || (r.OrganizationId == organizationId && organizationId != Guid.Empty)).Select(r => r.Id).ToListAsync(ct);
-        var query = _db.LabResults.AsNoTracking().Include(r => r.MedicalReport).Where(r => allowedReportIds.Contains(r.MedicalReportId)).AsQueryable();
+        var allowedReportIds = await _db.MedicalReports.AsNoTracking().InMedicalHistory().Where(r => r.UploadedByUserId == userId || r.PatientUserId == userId || (r.OrganizationId == organizationId && organizationId != Guid.Empty)).Select(r => r.Id).ToListAsync(ct);
+        var query = _db.LabResults.AsNoTracking().InMedicalHistory().Include(r => r.MedicalReport).Where(r => allowedReportIds.Contains(r.MedicalReportId)).AsQueryable();
         if (request.ReportIds.Count > 0) query = query.Where(r => request.ReportIds.Contains(r.MedicalReportId));
         var all = await query.ToListAsync(ct);
         var selected = all.Where(r => string.IsNullOrWhiteSpace(request.TestName) || Canonical(r.CorrectedTestName ?? r.NormalizedTestName ?? r.OriginalTestName) == Canonical(request.TestName!)).Where(r => DateInRange(r.MedicalReport?.ReportDate ?? r.MedicalReport?.UploadedAt, request)).ToList();
@@ -60,7 +60,7 @@ public class TrendsController : ControllerBase
 
     private static bool DateInRange(DateTimeOffset? value, CompareRequest request) => (!request.FromDate.HasValue || value >= request.FromDate) && (!request.ToDate.HasValue || value <= request.ToDate);
     private static string Canonical(string value) { var key = new string(value.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant(); return key switch { "hb" or "hgb" or "haemoglobin" => "hemoglobin", "glycosylatedhemoglobin" => "hba1c", _ => key }; }
-    private static TrendPoint ToPoint(LabResult r, bool conflicting) => new(r.MedicalReportId, r.MedicalReport?.ReportDate ?? r.MedicalReport?.UploadedAt, r.MedicalReport?.ReportDateSource ?? "UPLOAD_DATE", r.CorrectedTestName ?? r.NormalizedTestName ?? r.OriginalTestName, r.CorrectedValueNumeric ?? r.ValueNumeric, r.CorrectedValueText ?? r.ValueText, r.CorrectedUnit ?? r.NormalizedUnit ?? r.Unit, r.OriginalUnit ?? r.Unit, r.ReferenceText, r.CorrectedReferenceMin ?? r.ReferenceMin, r.CorrectedReferenceMax ?? r.ReferenceMax, r.CalculatedStatus.ToString(), LabResultTrust.ReviewState(r), LabResultTrust.IsTrusted(r) && !conflicting, conflicting ? "DEMOGRAPHIC_VARIANTS_CONFLICT" : !LabResultTrust.IsTrusted(r) ? r.ApplicabilityStatus is "REVIEW_REQUIRED" or "NOT_APPLICABLE" ? "DEMOGRAPHIC_APPLICABILITY" : "UNRESOLVED_REVIEW_POINT" : null);
+    private static TrendPoint ToPoint(LabResult r, bool conflicting) => new(r.MedicalReportId, r.MedicalReport?.ReportDate ?? r.MedicalReport?.UploadedAt, r.MedicalReport?.ReportDate is null ? "UPLOAD_DATE" : r.MedicalReport.ReportDateSource, r.CorrectedTestName ?? r.NormalizedTestName ?? r.OriginalTestName, r.CorrectedValueNumeric ?? r.ValueNumeric, r.CorrectedValueText ?? r.ValueText, r.CorrectedUnit ?? r.NormalizedUnit ?? r.Unit, r.OriginalUnit ?? r.Unit, r.ReferenceText, r.CorrectedReferenceMin ?? r.ReferenceMin, r.CorrectedReferenceMax ?? r.ReferenceMax, r.CalculatedStatus.ToString(), LabResultTrust.ReviewState(r), LabResultTrust.IsTrusted(r) && !conflicting, conflicting ? "DEMOGRAPHIC_VARIANTS_CONFLICT" : !LabResultTrust.IsTrusted(r) ? r.ApplicabilityStatus is "REVIEW_REQUIRED" or "NOT_APPLICABLE" ? "DEMOGRAPHIC_APPLICABILITY" : "UNRESOLVED_REVIEW_POINT" : null);
     private sealed class TrendPoint(Guid reportId, DateTimeOffset? date, string dateSource, string test, decimal? value, string valueText, string? unit, string? originalUnit, string? reference, decimal? referenceMin, decimal? referenceMax, string status, string reviewState, bool included, string? exclusionReason)
     { public Guid ReportId { get; } = reportId; public DateTimeOffset? Date { get; } = date; public string DateSource { get; } = dateSource; public string Test { get; } = test; public decimal? Value { get; } = value; public string ValueText { get; } = valueText; public string? Unit { get; } = unit; public string? OriginalUnit { get; } = originalUnit; public string? Reference { get; } = reference; public decimal? ReferenceMin { get; } = referenceMin; public decimal? ReferenceMax { get; } = referenceMax; public string Status { get; } = status; public string ReviewState { get; } = reviewState; public bool Included { get; set; } = included; public string? ExclusionReason { get; set; } = exclusionReason; }
 }

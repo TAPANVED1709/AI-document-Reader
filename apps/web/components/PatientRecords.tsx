@@ -41,11 +41,11 @@ export default function PatientRecords({ user, onLogout }: { user: CurrentUser; 
       if (!('jobId' in queued)) { open(queued.id); return; }
       for (let attempt = 0; attempt < 150; attempt++) {
         const status = await getProcessingStatus(queued.reportId, true);
-        if (status.status === 'FAILED') throw new Error('Processing could not complete. Your report remains in My Medical Records.');
+        if (status.status === 'FAILED') throw new Error('Report could not be processed.');
         if (['COMPLETED', 'REVIEW_REQUIRED'].includes(status.status)) { open(queued.reportId); return; }
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
-      throw new Error('Still processing. You can find this upload in My Medical Records.');
+      throw new Error('Still processing. Completed reports will appear in My Medical Records.');
     } catch (e) { const message = e instanceof Error ? e.message : 'Upload unavailable.'; setError(message); throw e; }
   };
   return <main className="min-h-screen"><header className="border-b border-line bg-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-5"><div><p className="text-xs font-bold uppercase tracking-wider text-teal">Private patient workspace</p><h1 className="text-2xl font-bold">My Medical Records</h1></div><div className="text-sm"><span>{user.firstName || 'Patient'}</span><button className={`${button} ml-3`} onClick={async () => { try { await logout(); onLogout(); } catch { setError('Unable to log out. Please try again.'); } }}>Log out</button></div></div></header>
@@ -75,7 +75,7 @@ function PatientReport({ id, back }: { id: string; back: () => void }) {
   const { data: report, error } = usePatientData<Report & { status: string }>(`medical-records/${id}`); const [page, setPage] = useState(1);
   if (!report) return <State error={error} />;
   return <><button className={`${button} mb-4`} onClick={back}>Back to My Medical Records</button><h2 className="mb-2 break-words text-xl font-bold">{report.originalFileName}</h2><p className="mb-4 text-sm">{report.status.replaceAll('_', ' ')} · {report.resultsCount} results · {report.processingMode}</p><ReportHeader report={report} />
-    <div className="grid gap-5 md:grid-cols-2"><PdfViewer reportId={id} page={page} setPage={setPage} /><section aria-label="Extracted results"><h2 className="mb-3 text-xl font-bold">Extracted results</h2>{!report.results.length && <p className={panel}>No extracted results available. Processing or review may still be needed.</p>}{groupPathologyResults(report.results).map(group => <section key={group.panel} className="mb-5"><h3 className="mb-2 font-bold">{group.panel}</h3>{group.results.map(result => <article key={result.id} className={`${panel} mb-3`}>
+    <div className="grid gap-5 md:grid-cols-2"><PdfViewer sourceFileAvailable={report.sourceFileAvailable} reportId={id} page={page} setPage={setPage} /><section aria-label="Extracted results"><h2 className="mb-3 text-xl font-bold">Extracted results</h2>{!report.results.length && <p className={panel}>No extracted results available. Processing or review may still be needed.</p>}{groupPathologyResults(report.results).map(group => <section key={group.panel} className="mb-5"><h3 className="mb-2 font-bold">{group.panel}</h3>{group.results.map(result => <article key={result.id} className={`${panel} mb-3`}>
       <div className="flex flex-wrap items-start justify-between gap-3"><div><h4 className="font-bold">{result.normalizedTestName || result.originalTestName}</h4><p className="text-xs text-slate-500">Original: {result.originalTestName}</p><p className="my-2 text-xl font-bold">{displayValue(result.valueNumeric, result.valueText)} {result.unit}</p><p className="text-sm">Reference: {result.referenceText || 'Not provided'}</p>{result.methodText && <p className="text-xs">Method: {result.methodText}</p>}</div><ResultStatus result={result} /></div>
       {(result.reviewRequired || result.calculatedStatus === 'UNKNOWN') && <p className="mt-3 rounded bg-amber-50 p-2 text-sm text-amber-900">Needs review: {result.validationIssues?.find(i => i.requiresReview && !i.isResolved)?.message || 'Please ask your laboratory to check this extracted value against the original report.'}</p>}
       <button className={`${button} mt-3`} onClick={() => setPage(result.pageNumber)}>View source page {result.pageNumber}</button>

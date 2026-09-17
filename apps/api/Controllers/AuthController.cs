@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Antiforgery;
+using System.ComponentModel.DataAnnotations;
 
 namespace AI.DocumentReader.Api.Controllers;
 
@@ -29,7 +30,11 @@ public class AuthController : ControllerBase
     [HttpPost("register"), EnableRateLimiting("auth")]
     public async Task<IActionResult> Register(RegisterRequest request, CancellationToken ct)
     {
-        if (request.Password.Length < 12 || !request.Password.Any(char.IsUpper) || !request.Password.Any(char.IsDigit)) return BadRequest(new { error = "Password does not meet the minimum requirements." });
+        if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName)
+            || request.FirstName.Length > 100 || request.LastName.Length > 100
+            || string.IsNullOrWhiteSpace(request.Email) || request.Email.Length > 254 || !new EmailAddressAttribute().IsValid(request.Email.Trim()))
+            return BadRequest(new { error = "Enter your first name, last name and a valid email address." });
+        if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 12 || request.Password.Length > 128 || !request.Password.Any(char.IsUpper) || !request.Password.Any(char.IsDigit)) return BadRequest(new { error = "Use 12–128 characters, including an uppercase letter and a number." });
         var email = request.Email.Trim().ToLowerInvariant();
         if (await _db.ApplicationUsers.AnyAsync(x => x.Email == email, ct)) return BadRequest(new { error = "Registration could not be completed." });
         // Public registration cannot self-assign a privileged role; staff provisioning is administrative.
@@ -38,7 +43,8 @@ public class AuthController : ControllerBase
         user.PasswordHash = _hasher.HashPassword(user, request.Password);
         _db.ApplicationUsers.Add(user);
         if (role == "PATIENT") _db.PatientProfiles.Add(new PatientProfile { UserId = user.Id, FirstName = user.FirstName, LastName = user.LastName, PatientCode = $"P-{user.Id:N}"[..12] });
-        await _db.SaveChangesAsync(ct);
+        try { await _db.SaveChangesAsync(ct); }
+        catch (DbUpdateException) { return BadRequest(new { error = "Registration could not be completed." }); }
         return Created("/api/auth/me", Safe(user));
     }
 

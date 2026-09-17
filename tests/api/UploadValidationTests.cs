@@ -75,11 +75,11 @@ public class UploadValidationTests
     }
 
     [Fact]
-    public void ValidateUploadFile_OversizedFile_ThrowsArgumentException()
+    public void ValidateUploadFile_OversizedFile_ThrowsUploadTooLargeException()
     {
         long twentyFiveMb = 25 * 1024 * 1024;
         var file = CreateMockFile("large.pdf", "application/pdf", twentyFiveMb);
-        var ex = Assert.Throws<ArgumentException>(() => _storageService.ValidateUploadFile(file));
-        Assert.Contains("maximum allowed limit", ex.Message);
+        var ex = Assert.Throws<UploadTooLargeException>(() => _storageService.ValidateUploadFile(file));
+        Assert.Equal("This report exceeds the 20 MB upload limit.", ex.Message);
     }
 }

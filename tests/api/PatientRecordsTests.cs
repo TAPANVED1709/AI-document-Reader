@@ -133,7 +133,7 @@ public class PatientRecordsTests
         await using var factory = new Phase10HttpSecurityFactory(); await factory.SeedAsync(); using var anonymous = factory.CreateClient();
         var paths = new[] { "/api/patient/medical-records", "/api/patient/medical-records/" + Guid.NewGuid(), "/api/patient/medical-timeline", "/api/patient/test-history/Creatinine", "/api/patient/latest-results" };
         foreach (var path in paths) Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.GetAsync(path)).StatusCode);
-        foreach (var email in new[] { "lab-a@test", "admin@test" })
+        foreach (var email in new[] { "lab-a@test", "path-a@test", "admin@test" })
         {
             var (client, _) = await factory.LoginAsync(email);
             foreach (var path in paths) Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync(path)).StatusCode);

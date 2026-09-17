@@ -20,10 +20,18 @@ public sealed class ProcessingWorker : BackgroundService
         var max = Math.Clamp(_configuration.GetValue("Processing:MaxConcurrentJobs", 2), 1, 8);
         using var gate = new SemaphoreSlim(max, max);
         var active = new List<Task>();
+        var recoveryInterval = TimeSpan.FromSeconds(Math.Clamp(_configuration.GetValue("Processing:StaleJobSeconds", 600) / 2, 1, 30));
+        var nextRecovery = DateTimeOffset.UtcNow.Add(recoveryInterval);
         try
         {
             while (!stoppingToken.IsCancellationRequested)
             {
+                // A restart can precede the stale cutoff. Revisit orphaned claims after they age out.
+                if (DateTimeOffset.UtcNow >= nextRecovery)
+                {
+                    await RecoverStaleJobs(stoppingToken);
+                    nextRecovery = DateTimeOffset.UtcNow.Add(recoveryInterval);
+                }
                 var started = 0;
                 for (var i = 0; i < max; i++)
                 {
@@ -78,17 +86,20 @@ public sealed class ProcessingWorker : BackgroundService
         var db = scope.ServiceProvider.GetRequiredService<DocumentDbContext>();
         var age = TimeSpan.FromSeconds(_configuration.GetValue("Processing:StaleJobSeconds", 600));
         var cutoff = DateTimeOffset.UtcNow.Subtract(age);
-        var stale = await db.ProcessingJobs.Where(x => x.Status == ProcessingJobStatus.PROCESSING).ToListAsync(ct);
-        foreach (var job in stale.Where(x => (x.HeartbeatAt ?? x.StartedAt ?? x.CreatedAt) < cutoff))
+        var stale = await db.ProcessingJobs.AsNoTracking().Where(x => x.Status == ProcessingJobStatus.PROCESSING).ToListAsync(ct);
+        foreach (var job in stale.Where(x => x.WorkerId != _workerId && (x.HeartbeatAt ?? x.StartedAt ?? x.CreatedAt) < cutoff))
         {
-            job.LastErrorCode = "WORKER_INTERRUPTED";
-            job.LastErrorSafeMessage = "Processing was interrupted before completion.";
-            if (job.AttemptCount < job.MaxAttempts)
-            { job.Status = ProcessingJobStatus.RETRYING; job.NextRetryAt = DateTimeOffset.UtcNow; }
-            else
-            { job.Status = ProcessingJobStatus.FAILED; job.CompletedAt = DateTimeOffset.UtcNow; }
+            var retry = job.AttemptCount < job.MaxAttempts;
+            var now = DateTimeOffset.UtcNow;
+            // Do not overwrite a completion or a newer claim from another worker.
+            await db.ProcessingJobs.Where(x => x.Id == job.Id && x.Status == ProcessingJobStatus.PROCESSING
+                && x.WorkerId == job.WorkerId && x.AttemptCount == job.AttemptCount)
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, retry ? ProcessingJobStatus.RETRYING : ProcessingJobStatus.FAILED)
+                    .SetProperty(x => x.NextRetryAt, retry ? (DateTimeOffset?)now : null)
+                    .SetProperty(x => x.CompletedAt, retry ? (DateTimeOffset?)null : now)
+                    .SetProperty(x => x.LastErrorCode, "WORKER_INTERRUPTED")
+                    .SetProperty(x => x.LastErrorSafeMessage, "Processing was interrupted before completion."), ct);
         }
-        await db.SaveChangesAsync(ct);
     }
 
     private async Task MarkTimeout(Guid jobId)
